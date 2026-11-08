@@ -1,0 +1,75 @@
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/fonts/montserrat-regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/fonts/montserrat-semibold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-montserrat: 'Montserrat';
+    --font-serif: Georgia;
+    --background: #141312;
+    --foreground: #faf6f0;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-montserrat), system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  section[id], main[id] { scroll-margin-top: 7rem; }
+  :focus-visible { outline: 2px solid #f0b89e; outline-offset: 5px; }
+  p { text-wrap: pretty; }
+  h1, h2, h3 { text-wrap: balance; }
+
+  ::selection {
+    background-color: #9b5d43;
+    color: #faf6f0;
+  }
+}
+
+.archive-dialog {
+  padding: 0;
+  width: min(42rem, calc(100% - 2rem));
+  max-height: 85dvh;
+  border: 1px solid #60583f;
+  border-radius: 0.75rem;
+  color: #faf6f0;
+  background: #1c1a18;
+}
+.archive-dialog::backdrop { background: rgb(20 19 18 / 85%); }
+.archive-dialog button { min-height: 44px; min-width: 44px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Hide scrollbar for clean carousels while preserving touch and wheel scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
