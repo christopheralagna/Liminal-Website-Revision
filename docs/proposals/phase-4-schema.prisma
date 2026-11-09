@@ -33,25 +33,6 @@ enum AssignmentStatus {
   CANCELLED
 }
 
-enum CoverageStatus {
-  OPEN
-  FULFILLED
-  CANCELLED
-}
-
-enum EventStatus {
-  DRAFT
-  SCHEDULED
-  COMPLETED
-  CANCELLED
-}
-
-enum TransactionKind {
-  DONATION
-  OTHER_INCOME
-  EXPENSE
-}
-
 // Auth library owns password hashing, credentials, tokens, and session lifecycle.
 // Configure Better Auth UUID generation; role/isActive are server-owned additional fields.
 model User {
@@ -66,10 +47,7 @@ model User {
   updatedAt        DateTime          @updatedAt @db.Timestamptz(3)
   accounts         Account[]
   sessions         Session[]
-  volunteerProfile VolunteerProfile?
-  transactions     FinancialTransaction[]
-  auditEntries     AuditEntry[]
-}
+  volunteerProfile VolunteerProfile?}
 
 model Account {
   id                    String    @id @default(uuid()) @db.Uuid
@@ -88,8 +66,7 @@ model Account {
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([providerId, accountId])
-  @@index([userId])
-}
+  @@index([userId])}
 
 model Session {
   id        String   @id @default(uuid()) @db.Uuid
@@ -103,8 +80,7 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([expiresAt])
-}
+  @@index([expiresAt])}
 
 model Verification {
   id         String   @id @default(uuid()) @db.Uuid
@@ -115,39 +91,37 @@ model Verification {
   updatedAt  DateTime @updatedAt @db.Timestamptz(3)
 
   @@index([identifier])
-  @@index([expiresAt])
-}
+  @@index([expiresAt])}
 
 // A volunteer does not need a login. Administrative records are synthetic only.
 model VolunteerProfile {
-  id             String                   @id @default(uuid()) @db.Uuid
-  userId         String?                  @unique @db.Uuid
-  displayName    String
-  email          String?                  // Synthetic @example.invalid only in seeds.
-  status         VolunteerStatus          @default(ACTIVE)
-  createdAt      DateTime                 @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime                 @updatedAt @db.Timestamptz(3)
-  user           User?                    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  roles          VolunteerRoleMembership[]
-  qualifications VolunteerQualification[]
-  availability   Availability[]
-  assignments    ShiftAssignment[]
-  coverageClaims CoverageRequest[]
+  id                   String                    @id @default(uuid()) @db.Uuid
+  userId               String?                   @unique @db.Uuid
+  displayName          String
+  email                String?                   // Synthetic @example.invalid only in seeds.
+  status               VolunteerStatus           @default(ACTIVE)
+  // Current recorded certificate only; neither date confers role membership.
+  // Dates are optional independently; missing information is not proof of validity.
+  foodHandlerIssuedOn  DateTime?                 @db.Date
+  foodHandlerExpiresOn DateTime?                 @db.Date
+  createdAt            DateTime                  @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime                  @updatedAt @db.Timestamptz(3)
+  user                 User?                     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  roles                VolunteerRoleMembership[]
+  availability         Availability[]
+  assignments          ShiftAssignment[]
 
-  @@index([status])
-}
+  @@index([status])}
 
 // Operational roles are configurable and confer NO application access permissions.
 model VolunteerRole {
-  id             String                      @id @default(uuid()) @db.Uuid
-  name           String                      @unique
-  isActive       Boolean                     @default(true)
-  createdAt      DateTime                    @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime                    @updatedAt @db.Timestamptz(3)
-  volunteers     VolunteerRoleMembership[]
-  requirements   RoleQualification[]
-  definitions    ShiftDefinition[]
-}
+  id          String                    @id @default(uuid()) @db.Uuid
+  name        String                    @unique
+  isActive    Boolean                   @default(true)
+  createdAt   DateTime                  @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime                  @updatedAt @db.Timestamptz(3)
+  volunteers  VolunteerRoleMembership[]
+  definitions ShiftDefinition[]}
 
 model VolunteerRoleMembership {
   volunteerId String           @db.Uuid
@@ -157,79 +131,38 @@ model VolunteerRoleMembership {
   role        VolunteerRole    @relation(fields: [roleId], references: [id], onDelete: Restrict)
 
   @@id([volunteerId, roleId])
-  @@index([roleId])
-}
-
-model Qualification {
-  id           String                   @id @default(uuid()) @db.Uuid
-  name         String                   @unique
-  isActive     Boolean                  @default(true)
-  createdAt    DateTime                 @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime                 @updatedAt @db.Timestamptz(3)
-  holders      VolunteerQualification[]
-  requiredFor  RoleQualification[]
-}
-
-model RoleQualification {
-  roleId          String        @db.Uuid
-  qualificationId String        @db.Uuid
-  createdAt       DateTime      @default(now()) @db.Timestamptz(3)
-  role            VolunteerRole @relation(fields: [roleId], references: [id], onDelete: Restrict)
-  qualification   Qualification @relation(fields: [qualificationId], references: [id], onDelete: Restrict)
-
-  @@id([roleId, qualificationId])
-  @@index([qualificationId])
-}
-
-// Separate awards preserve renewal/revocation history; no automatic training-count rule.
-model VolunteerQualification {
-  id              String           @id @default(uuid()) @db.Uuid
-  volunteerId     String           @db.Uuid
-  qualificationId String           @db.Uuid
-  awardedAt       DateTime         @db.Timestamptz(3)
-  expiresAt       DateTime?        @db.Timestamptz(3)
-  revokedAt       DateTime?        @db.Timestamptz(3)
-  createdAt       DateTime         @default(now()) @db.Timestamptz(3)
-  updatedAt       DateTime         @updatedAt @db.Timestamptz(3)
-  volunteer       VolunteerProfile @relation(fields: [volunteerId], references: [id], onDelete: Restrict)
-  qualification   Qualification    @relation(fields: [qualificationId], references: [id], onDelete: Restrict)
-
-  @@unique([volunteerId, qualificationId, awardedAt])
-  @@index([qualificationId])
-}
+  @@index([roleId])}
 
 // Local weekly windows; 0=Sunday. Minutes since midnight, end exclusive.
 // Overnight availability is represented by two windows on adjacent weekdays.
 model Availability {
-  id           String           @id @default(uuid()) @db.Uuid
-  volunteerId  String           @db.Uuid
-  dayOfWeek    Int
-  startMinute  Int
-  endMinute    Int
-  timeZone     String           @default("America/Phoenix")
-  validFrom    DateTime         @db.Date
-  validUntil   DateTime?        @db.Date
-  createdAt    DateTime         @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime         @updatedAt @db.Timestamptz(3)
-  volunteer    VolunteerProfile @relation(fields: [volunteerId], references: [id], onDelete: Restrict)
+  id          String           @id @default(uuid()) @db.Uuid
+  volunteerId String           @db.Uuid
+  dayOfWeek   Int
+  startMinute Int
+  endMinute   Int
+  timeZone    String           @default("America/Phoenix")
+  validFrom   DateTime         @db.Date
+  validUntil  DateTime?        @db.Date
+  createdAt   DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime         @updatedAt @db.Timestamptz(3)
+  volunteer   VolunteerProfile @relation(fields: [volunteerId], references: [id], onDelete: Restrict)
 
-  @@index([volunteerId, dayOfWeek, validFrom])
-}
+  @@index([volunteerId, dayOfWeek, validFrom])}
 
 // Reusable definitions are not a recurring schedule by themselves.
 model ShiftDefinition {
-  id           String        @id @default(uuid()) @db.Uuid
-  name         String
-  roleId       String        @db.Uuid
-  isActive     Boolean       @default(true)
-  createdAt    DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime      @updatedAt @db.Timestamptz(3)
-  role         VolunteerRole @relation(fields: [roleId], references: [id], onDelete: Restrict)
-  patterns     ShiftPattern[]
-  shifts       Shift[]
+  id        String         @id @default(uuid()) @db.Uuid
+  name      String
+  roleId    String         @db.Uuid
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime       @updatedAt @db.Timestamptz(3)
+  role      VolunteerRole  @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  patterns  ShiftPattern[]
+  shifts    Shift[]
 
-  @@index([roleId])
-}
+  @@index([roleId])}
 
 // Weekly recurrence only; one row per weekday, bounded by local calendar dates.
 model ShiftPattern {
@@ -248,16 +181,14 @@ model ShiftPattern {
   definition      ShiftDefinition @relation(fields: [definitionId], references: [id], onDelete: Restrict)
   shifts          Shift[]
 
-  @@index([definitionId, isActive])
-}
+  @@index([definitionId, isActive])}
 
 // Actual occurrences have absolute timestamps and their own capacity.
-// Optional event links provide event staffing without a second assignment system.
+// Event links may be introduced in a later migration when that domain is implemented.
 model Shift {
   id           String            @id @default(uuid()) @db.Uuid
   definitionId String            @db.Uuid
   patternId    String?           @db.Uuid
-  eventId      String?           @db.Uuid
   startsAt     DateTime          @db.Timestamptz(3)
   endsAt       DateTime          @db.Timestamptz(3)
   capacity     Int
@@ -266,99 +197,23 @@ model Shift {
   updatedAt    DateTime          @updatedAt @db.Timestamptz(3)
   definition   ShiftDefinition   @relation(fields: [definitionId], references: [id], onDelete: Restrict)
   pattern      ShiftPattern?     @relation(fields: [patternId], references: [id], onDelete: Restrict)
-  event        Event?            @relation(fields: [eventId], references: [id], onDelete: Restrict)
   assignments  ShiftAssignment[]
 
   @@unique([patternId, startsAt])
   @@index([startsAt, endsAt])
-  @@index([definitionId])
-  @@index([eventId])
-}
+  @@index([definitionId])}
 
+// Coordinators cancel/reassign through these rows; no coverage-request workflow.
+// Preserve the original volunteerId when cancelling an assignment.
 model ShiftAssignment {
-  id               String           @id @default(uuid()) @db.Uuid
-  shiftId          String           @db.Uuid
-  volunteerId      String           @db.Uuid
-  status           AssignmentStatus @default(ASSIGNED)
-  createdAt        DateTime         @default(now()) @db.Timestamptz(3)
-  updatedAt        DateTime         @updatedAt @db.Timestamptz(3)
-  shift            Shift            @relation(fields: [shiftId], references: [id], onDelete: Restrict)
-  volunteer        VolunteerProfile @relation(fields: [volunteerId], references: [id], onDelete: Restrict)
-  coverageRequests CoverageRequest[]
+  id          String           @id @default(uuid()) @db.Uuid
+  shiftId     String           @db.Uuid
+  volunteerId String           @db.Uuid
+  status      AssignmentStatus @default(ASSIGNED)
+  createdAt   DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime         @updatedAt @db.Timestamptz(3)
+  shift       Shift            @relation(fields: [shiftId], references: [id], onDelete: Restrict)
+  volunteer   VolunteerProfile @relation(fields: [volunteerId], references: [id], onDelete: Restrict)
 
   @@unique([shiftId, volunteerId])
-  @@index([volunteerId, status])
-}
-
-// Coverage includes swap-like replacement requests. No approval/notification workflow assumed.
-model CoverageRequest {
-  id                    String            @id @default(uuid()) @db.Uuid
-  assignmentId          String            @db.Uuid
-  proposedVolunteerId   String?           @db.Uuid
-  status                CoverageStatus    @default(OPEN)
-  createdAt             DateTime          @default(now()) @db.Timestamptz(3)
-  updatedAt             DateTime          @updatedAt @db.Timestamptz(3)
-  assignment            ShiftAssignment   @relation(fields: [assignmentId], references: [id], onDelete: Restrict)
-  proposedVolunteer     VolunteerProfile? @relation(fields: [proposedVolunteerId], references: [id], onDelete: Restrict)
-
-  @@index([assignmentId, status])
-  @@index([proposedVolunteerId])
-}
-
-// Administrative demo events are entirely separate from src/data/events.ts.
-model Event {
-  id          String      @id @default(uuid()) @db.Uuid
-  title       String
-  description String?
-  startsAt    DateTime    @db.Timestamptz(3)
-  endsAt      DateTime    @db.Timestamptz(3)
-  status      EventStatus @default(DRAFT)
-  createdAt   DateTime    @default(now()) @db.Timestamptz(3)
-  updatedAt   DateTime    @updatedAt @db.Timestamptz(3)
-  shifts      Shift[]
-
-  @@index([status, startsAt])
-}
-
-model FinancialCategory {
-  id           String                 @id @default(uuid()) @db.Uuid
-  name         String                 @unique
-  isActive     Boolean                @default(true)
-  createdAt    DateTime               @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime               @updatedAt @db.Timestamptz(3)
-  transactions FinancialTransaction[]
-}
-
-// A basic cash ledger, not double-entry accounting. No donor identities or receipts.
-model FinancialTransaction {
-  id            String            @id @default(uuid()) @db.Uuid
-  kind          TransactionKind
-  amountInCents Int
-  occurredOn    DateTime          @db.Date
-  categoryId    String            @db.Uuid
-  description   String
-  createdById   String            @db.Uuid
-  createdAt     DateTime          @default(now()) @db.Timestamptz(3)
-  updatedAt     DateTime          @updatedAt @db.Timestamptz(3)
-  category      FinancialCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  createdBy     User              @relation(fields: [createdById], references: [id], onDelete: Restrict)
-
-  @@index([occurredOn, kind])
-  @@index([categoryId, occurredOn])
-  @@index([createdById])
-}
-
-// Minimal application audit trail. NOT tamper-proof; secrets/PII excluded from metadata.
-model AuditEntry {
-  id         String   @id @default(uuid()) @db.Uuid
-  actorId    String   @db.Uuid
-  action     String
-  entityType String
-  entityId   String
-  metadata   Json?    @db.JsonB
-  createdAt  DateTime @default(now()) @db.Timestamptz(3)
-  actor      User     @relation(fields: [actorId], references: [id], onDelete: Restrict)
-
-  @@index([actorId, createdAt])
-  @@index([entityType, entityId, createdAt])
-}
+  @@index([volunteerId, status])}

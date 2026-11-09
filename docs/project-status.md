@@ -1,8 +1,9 @@
 # Liminal Project Status & Context Summary
 
 **Updated:** November 8, 2026  
-**Current work:** Phase 4 Stage A architecture review and database proposal prepared; awaiting explicit approval before Stage B.  
-**Stack:** Next.js 14 App Router, React 18, TypeScript, Tailwind CSS.
+**Current work:** Phase 4 Stage B (B1–B5) database foundation complete; stopped before Stage C.
+
+**Stack:** Node 24.22.2, Next.js 16.4.5 App Router, React 19.3.1, TypeScript 5.9.3, Tailwind CSS 3.4.19.
 
 ## Project scope
 
@@ -32,10 +33,14 @@ Production build, configured lint, and standard TypeScript checks passed. The ex
 
 ## Backend and working tree
 
-The existing `prisma/schema.prisma` is an uninstalled SQLite draft. No backend dependencies, migrations, seed, authentication, or administrative features are implemented.
+The active `prisma/schema.prisma` now implements the approved **12-model PostgreSQL foundation** with Prisma 7.10.1 and its PostgreSQL adapter. Local PostgreSQL 17.11 development/test services have separate loopback ports, credentials, named volumes, and health checks. One additive migration is applied to both; custom SQL enforces date/time/capacity/email integrity. No database reset was used.
 
-Stage A deliverables are [the backend proposal](phase-4-backend.md) and [the complete proposed PostgreSQL schema](proposals/phase-4-schema.prisma), separate from the active schema. Recommendations: one Next.js app, Prisma 7/PostgreSQL, Better Auth email/password with database sessions, three application roles, configurable volunteer roles/qualifications, weekly recurrence, and a basic synthetic financial ledger. Inventory, budgets, historical operating rules, and venue-vetting policy are excluded.
+The seed creates 12 synthetic volunteers, three roles, 16 memberships, 24 availability windows, two recurring patterns, two shifts, and four assignments. It is transactional, repeatable, and preserves user edits/unrelated records. Zero users, credentials, or sessions are seeded. No private historical records were imported.
 
-Installed Next.js is 14.2.35 and local Node is 18.20.8. The proposal requests approval for a supported Node 24 / Next.js 16 / compatible React upgrade before auth implementation; nothing has been upgraded. Exact dependency compatibility, Prisma validation, migrations, seed, auth testing, and database availability remain unverified. Stage A changed documentation only. Existing architecture/workflow/roadmap documents remain earlier proposals; Phase 4 implementation must follow the approved design and firsthand corrections rather than their unsupported assumptions.
+Better Auth 1.7.18's generated core schema is reconciled and retained as a development artifact. There is **no authentication implementation**, account provisioning, admin route, or scheduling engine. Deferred event/finance/audit/qualification/coverage models remain absent. Role memberships and optional food-handler dates follow the approved simplified design.
 
-The working tree already contained uncommitted Phase 2/3 work at the start of refinement, including homepage changes and untracked routes/docs. Those changes were preserved. No commit or deployment was performed. Do not assume the working tree is clean. Stop at the Stage A checkpoint until the owner explicitly approves the design and prerequisites; do not begin Stage B or Phase 5 yet.
+Validation: Prisma validation/generation, migrations/status, repeated seed, no-drift comparison, **nine unit/contract tests and 19 PostgreSQL tests**, TypeScript, and final lint/build passed. The public build and all six routes were verified with the project databases stopped. Existing public source/assets are unchanged; no visual testing was repeated. Details and known limits: [backend guide](phase-4-backend.md). Existing B1 development-tooling warnings remain documented and were not reinvestigated.
+
+The server-only Prisma singleton is lazy; public pages need no database. `.env*` is ignored except `.env.example`; generated Prisma output is ignored and recreated on installation. Local mutation commands verify approved database targets and live database/user identity. No deployment was performed.
+
+Prior uncommitted changes, including Stage A/B1 work, were preserved. Stage C is the next approval boundary: maintained authentication, sessions, server-side authorization, and secure administrator provisioning. Phase 5 scheduling workflows remain future work.

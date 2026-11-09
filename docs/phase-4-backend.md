@@ -1,135 +1,143 @@
-# Phase 4 backend — Stage A proposal
+# Phase 4 backend foundation
 
-**Date:** November 8, 2026  
-**Status:** Architecture reviewed; proposed schema awaiting explicit approval. No backend implementation has begun.
+**Updated:** November 8, 2026
 
-The complete proposed models, fields, relationships, indexes, and deletion rules are in [the draft Prisma schema](proposals/phase-4-schema.prisma). This is deliberately separate from `prisma/schema.prisma`; it is not an active database configuration. Approval is required before Stage B. Nothing in this proposal establishes a historical fact about Liminal.
+**Status:** Stage B (B1–B5) implemented. Stop before Stage C authentication.
 
-## Existing application and corrections to earlier plans
+## Architecture and scope
 
-- Installed: Next.js **14.2.35**, React **18.3.1**, TypeScript **5.9.3**, Tailwind **3.4.19**. TypeScript strict mode is already enabled. Local Node is **18.20.8**.
-- `prisma/schema.prisma` is an uninstalled **SQLite draft**, not a working PostgreSQL integration. Prisma, an auth library, Zod, and Vitest are absent from the package manifest and installed top-level dependencies. No migrations, seed, generated Prisma client, `src/server`, auth handlers, or admin routes exist.
-- Public pages live directly under `src/app`; the root layout currently renders the public banner, header, and footer for every route. The proposed route separation must address this before adding admin pages.
-- Earlier documents describe Next.js 15 and credential authentication with Auth.js v5/database sessions as though already selected. These are proposals, not implemented capabilities; the credential/session combination must not be assumed to work merely by adding adapter tables.
-- The database draft stores domain statuses as strings, mandates logins for volunteers, lacks a recurring-pattern model, and embeds fixed hours, two-training-shift certification, and a four-hour maximum. Remove these assumptions. Older event-vetting policy requirements conflict with the owner's firsthand corrections and are excluded.
-- Budgeting, inventory, harm-reduction distribution metrics, receipt storage, external calendars, automatic notifications, and a future NestJS extraction are unnecessary for this foundation. No corresponding tables or infrastructure are proposed.
-- `references/` is ignored, and `git ls-files references` returned no tracked records. `.env` and `.env.local` are ignored. Before secrets are introduced, broaden environment exclusions while explicitly permitting `.env.example`; this is planned, not changed in Stage A.
+One Next.js App Router application contains the unchanged public historical archive and the foundation for a future administrative interface. PostgreSQL stores synthetic administrative data only; public pages continue to use their existing static content modules. No admin pages, login, authentication handler, account provisioning, scheduling engine, or public deployment was added.
 
-## Technology recommendation and compatibility decision
+B1's Node 24.22.2 / Next.js 16.4.5 / React 19.3.1 baseline is retained. Stage B adds exact pins for Prisma CLI/client/PostgreSQL adapter **7.10.1**, `pg` **8.23.1**, Zod **4.6.7**, Vitest **5.1.0**, and tsx **4.23.15**. Better Auth and its `auth` CLI **1.7.18** are development-only schema tools at this stage. PostgreSQL reports **17.11**; Compose pins the official image by digest. No separate server or repository framework.
 
-Keep one Next.js application with server-only modules, Server Components, thin Server Actions, and the auth library's Route Handler. No Express, NestJS, separate API service, or generic repository framework.
+`prisma/schema.prisma` is now the active PostgreSQL schema. The [approved Stage A draft](proposals/phase-4-schema.prisma) remains unchanged as a design record. Older database/workflow documents describe unimplemented or superseded assumptions and must not override this implementation.
 
-**Recommended prerequisite for approval:** upgrade the development runtime to Node **24 LTS** and the application to a patched, supported **Next.js 16 / compatible React** release before adding authentication. Preserve public URLs, content, components, fonts, and styles, and perform public regression checks. This is a technical prerequisite proposal, not authorization to redesign or an upgrade already performed. Next.js currently lists 14 as unsupported. [Next.js support policy](https://nextjs.org/support-policy)
+## Models and relationships
 
-Use **Prisma 7** with PostgreSQL and its PostgreSQL driver adapter. Pin matching Prisma CLI/client/adapter versions after approval. Prisma 8 is currently documented as a release candidate and is not supported by Better Auth's Prisma adapter; do not use unqualified `latest` installation commands. Node 18 does not meet Prisma 7's requirements. [Prisma requirements](https://docs.prisma.io/docs/orm/reference/system-requirements), [Better Auth Prisma adapter](https://better-auth.com/docs/adapters/prisma)
-
-Recommend **Better Auth** with library-managed email/password authentication and database sessions. It provides Next.js integration and a Prisma adapter without requiring an identity provider, SMTP, or custom authentication protocols. Use its core `User`, `Account`, `Session`, and `Verification` models; reconcile the draft with schema generated by the exact pinned library configuration before migration. UUID generation must be configured in the library to match `@db.Uuid`. [Next.js integration](https://better-auth.com/docs/integrations/next), [auth database schema](https://better-auth.com/docs/concepts/database)
-
-Add Zod for server input/environment validation and Vitest for backend tests only after approval. Choose exact stable releases by checking their Node/Next/React peer constraints, commit the lockfile, and run the integration checks; package compatibility has **not** been proven in Stage A. [Vitest setup](https://vitest.dev/guide/)
-
-## Proposed model groups
-
-| Models | Purpose and relationships |
+| Models | Purpose |
 | --- | --- |
-| `User`, `Account`, `Session`, `Verification` | Library-managed identity, credential hashes, sessions, and verification records. User has one application access role and can be disabled. Credentials never live on the volunteer profile. Core optional provider fields are library compatibility fields, not a plan to enable OAuth. |
-| `VolunteerProfile` | Independent volunteer record with active/inactive status and optional unique link to a login. No emergency contacts, addresses, arbitrary biography, or training-count assumptions. |
-| `VolunteerRole`, `VolunteerRoleMembership` | Configurable operational roles with many-to-many volunteer membership. These do not grant admin permissions. |
-| `Qualification`, `RoleQualification`, `VolunteerQualification` | Configurable role requirements and dated qualification awards, optional expiration/revocation. Renewals remain separate records; no automatic certification based on a count of shifts. |
-| `Availability` | Effective-dated weekly availability, weekday and local start/end minutes, with explicit timezone. One-off exceptions are deferred. |
-| `ShiftDefinition`, `ShiftPattern`, `Shift` | Definition names a type of work and required role; pattern describes a weekly local-time recurrence; shift stores a concrete occurrence with absolute start/end instants and capacity. Ad hoc shifts need no pattern. |
-| `ShiftAssignment` | Volunteer-to-shift link, unique per volunteer/shift pair, with a small status enum. Cancellation preserves the record. |
-| `CoverageRequest` | Multiple historical requests may reference an assignment; optional proposed replacement and open/fulfilled/cancelled state. Requester is obtained from the original assignment rather than duplicated. A true two-way exchange is not yet modeled. |
-| `Event` | Synthetic administrative event with schedule and status; optional staffing through linked shifts and their assignments. No public publication flag, historical archive relationship, or invented venue policy. |
-| `FinancialCategory`, `FinancialTransaction` | Configurable categories and a basic cash ledger of donations, other income, and expenses. Positive integer cents, calendar transaction date, author, and timestamps. No donor identities, payment processor, tax reporting, budget system, or double-entry claims. Proposed currency is USD only. |
-| `AuditEntry` | Minimal actor/action/entity/time history with optional allowlisted JSON metadata. Mutations and their audit entries share a database transaction. Not a tamper-proof accounting or security log. Never log passwords, tokens, or unrestricted request/record dumps. |
+| `User`, `Account`, `Session`, `Verification` | Authentication-compatible tables only; no runtime authentication. Server-owned `ADMIN`, `COORDINATOR`, `VIEWER` role enum remains separate from operational roles. |
+| `VolunteerProfile` | Volunteer identity/status with optional unique user link; optional food-handler issuance/expiration dates. |
+| `VolunteerRole`, `VolunteerRoleMembership` | Configurable activities and many-to-many volunteer authorization. |
+| `Availability` | Effective-dated weekly local-time windows. |
+| `ShiftDefinition`, `ShiftPattern`, `Shift` | Work definition → weekly pattern → concrete occurrence; ad hoc shifts may omit a pattern. |
+| `ShiftAssignment` | Links multiple volunteers to a shift; unique volunteer/shift pair and cancellation status. |
 
-All entity IDs are UUIDs. Junction tables have composite primary keys; all foreign-key identifiers match their target types. Mutable records have creation/update timestamps; append-only links and audit records have creation timestamps. Relevant foreign keys and schedule/date lookups are indexed. Extra indexes on already-unique email/token columns are omitted.
+Exactly **12 models** and four application/domain enums. Event, finance, audit, generalized qualification, and coverage-request models remain deferred, including their foreign keys and enums. No historical operating hours, volunteer limits, certification requirements, or venue policies were inferred.
 
-Auth sessions/accounts can cascade when a user is removed. Volunteer links to a deleted user become null; operational records otherwise use restrictive foreign keys. Retire users, roles, definitions, and categories instead of deleting referenced records. Existing transactions/audit entries intentionally prevent deleting their author. Administrative synthetic data never becomes public historical content.
+Operational foreign keys restrict deletion to preserve records. User deletion cascades accounts/sessions and sets an optional volunteer login link to null. Relevant foreign keys and schedule queries are indexed. Capacity is a positive integer; **aggregate capacity, overlapping shifts, role membership, timezone validity, pattern consistency, and availability eligibility are Phase 5 service rules**, not currently enforced by the database.
 
-## Scheduling support and integrity boundaries
+Food-handler fields describe the current certificate only. Null means missing information, not proof of validity; expiration cannot precede issuance when both dates exist. They do not grant membership or imply any role requires certification. Renewal history and expiry-day eligibility decisions remain deferred.
 
-- **Availability:** `dayOfWeek` uses 0–6; `[startMinute, endMinute)` uses local minutes within one day. Overnight availability is split across weekdays. Effective dates are local calendar dates. Default timezone is `America/Phoenix`, an application default rather than a historical schedule claim.
-- **Recurrence:** weekly patterns have a weekday, local start, duration, capacity, timezone, and validity dates. Each weekday is a separate pattern. Generated occurrences use `timestamptz`; `[patternId, startsAt]` uniqueness makes occurrence generation idempotent for the same pattern/instant. Null-pattern ad hoc shifts are deliberately not covered by that uniqueness. Monthly/alternating patterns and recurrence exceptions are deferred.
-- **Assignments:** the unique volunteer/shift pair prevents duplicate assignment to the same shift. It does **not** prevent overlapping different shifts. Compare active assignments using `existing.startsAt < proposed.endsAt && existing.endsAt > proposed.startsAt`; adjacent shifts do not overlap. Include event staffing through the same shift table. Cancelled shifts/assignments do not count.
-- **Qualifications:** compare the shift definition's role requirements with unrevoked volunteer awards valid for the entire proposed shift. Membership, active volunteer status, and availability are separate checks. Requirements are data, not role names hardcoded into scheduling logic.
-- **Concurrency:** Phase 5 must lock the volunteer and affected shift rows in a consistent order inside a transaction, then recheck overlap, availability, requirements, and capacity before writing. Multi-volunteer operations lock all affected rows in stable ID order. A read-then-insert outside a transaction is insufficient. PostgreSQL exclusion constraints across a join are not supplied by the draft and no conflict prevention is claimed yet.
-- **History:** pattern edits must never rewrite completed occurrences. Preserve assignment/request rows and qualification renewals. Retire used definitions/roles or create replacements when their meaning changes; requirements changes need an effective-date/versioning decision before Phase 5 if historical eligibility must be reconstructed. The current proposal does not implement a full policy-version system.
-- **Coverage:** keep the original cancelled assignment and create/reactivate the replacement's assignment atomically when fulfilled; do not change the original assignment's volunteer identity. True two-shift exchanges and approval authority require a later decision.
+## Migration and auth-schema reconciliation
 
-Planned Stage B SQL constraints supplement Prisma, which cannot express these checks directly in the draft:
+The additive migration `20261108000000_initial` creates the 12 tables and indexes. Applied successfully to separate development and test databases without resetting either.
 
-1. Availability weekday 0–6; `0 <= startMinute < endMinute <= 1440`; effective end date null or not before start date.
-2. Pattern weekday 0–6; start minute 0–1439; duration 1–1440 minutes; capacity positive; validity dates ordered. Concrete shifts may cross midnight.
-3. Shift/event end strictly after start; shift capacity positive; financial amounts positive; qualification expiry after award and revocation not before award.
-4. Partial unique index on coverage `assignmentId WHERE status = 'OPEN'`, allowing historical closed requests while preventing duplicate open requests.
-5. Normalize auth emails to trimmed lowercase at the library/application boundary and add a canonical-form check alongside the unique constraint; test mixed-case login against the pinned library.
+Custom SQL checks enforce:
 
-IANA timezone validity, pattern/definition consistency, self-replacement rejection, and cross-record eligibility remain server-side validations. They are not implied by foreign keys. These integrity checks are implementation plans, not migrations already written.
+- Canonical trimmed lowercase, nonempty user email.
+- Food-handler date ordering when both dates are recorded.
+- Availability weekday 0–6, `0 <= startMinute < endMinute <= 1440`, and effective-date ordering.
+- Pattern weekday 0–6, start minute 0–1439, duration 1–1440 minutes, positive capacity, and ordered validity dates.
+- Concrete shift end after start and positive capacity.
 
-## Authentication and access proposal
+Better Auth's exact generator/configuration produced [the committed schema artifact](generated/better-auth-1.7.18.prisma). `scripts/auth-schema.config.mts` is a schema-only configuration, never imported by application routes. It specifies UUID generation, signup disabled, and server-owned role/active fields. This is not a usable authentication service.
 
-| Application role | Proposed permissions |
-| --- | --- |
-| `ADMIN` | Access all admin sections, including finance; provision/manage accounts through controlled server-side tools. |
-| `COORDINATOR` | Volunteer, scheduling, and event operations; no finance access or account/role management. |
-| `VIEWER` | Read-only volunteer, schedule, and event views; no finance or writes. Suitable for a future limited demo, with no public credentials provisioned now. |
+Reconciliation retained the generated core fields and nullability. Auth IDs use PostgreSQL-generated UUIDs; the active schema spells `gen_random_uuid()` without the generator's `pg_catalog` prefix because PostgreSQL introspection normalizes it that way. A read-only Prisma diff reports **no difference**. The domain still uses Prisma-generated UUIDs. Approved physical table names, native timestamp precision, application role enum, extra expiry indexes, and provider/account uniqueness were retained intentionally; the library adapter addresses Prisma models rather than requiring lowercase physical table names.
 
-This is a proposed software permission model, not a reconstruction of the nonprofit's board or volunteer hierarchy. Default account role is least-privileged `VIEWER`; no role is inferred from a volunteer's job or qualifications.
+Stage C must integrate and test the real Prisma auth adapter, sessions, signup restrictions, permission checks, and secure provisioning. Generating compatible tables is not evidence that login or authorization works.
 
-After approval: disable public signup at the library endpoint, configure `role`/`isActive` as server-owned inputs, and do not mount signup UI. Use library-managed password hashing, session cookies, login/logout, expiry, CSRF/origin protection, and rate limiting. No JWT/session protocol or password implementation of our own. Validate the live session and current user role/active state on every protected operation, with no shared cached user data or client-only permission checks. Clear/revoke sessions on logout or disable; validate allowed local redirect destinations. Return generic login errors. [Email/password configuration](https://better-auth.com/docs/authentication/email-password)
-
-Provision the initial admin with a local-only command using the library's password-hashing utility and a Prisma transaction for user/credential records. Read the password from a masked prompt or one-time environment input, never from a command argument or checked-in fixture; do not log it. Reject duplicate provisioning rather than silently resetting credentials. The command is not an HTTP endpoint and does not enable signup in the running application. Validate this flow against the pinned library's credential model.
-
-The deterministic domain seed will create no working login or sessions. A disabled synthetic actor with no credential can own seed financial/audit records. Provision the local administrator separately. Use visibly fictional labels such as `Demo Volunteer 01`, `@example.invalid` addresses, and a fixed, clearly labeled demonstration date range unrelated to historical records.
-
-## Planned application structure (not created)
+## Modules
 
 ```text
-src/app/layout.tsx                      # Shared HTML/body/fonts only
-src/app/(public)/layout.tsx             # Existing public banner/header/footer/metadata
-src/app/(public)/...                    # Existing public routes, URLs and content retained
-src/app/admin/layout.tsx                # Minimal separate admin base, includes login
-src/app/admin/login/page.tsx            # Public login; valid authorized users -> /admin
-src/app/admin/(protected)/layout.tsx    # Valid session + access guard, admin navigation
-src/app/admin/(protected)/page.tsx      # Database-backed dashboard
-src/app/admin/(protected)/volunteers/page.tsx
-src/app/admin/(protected)/scheduling/page.tsx
-src/app/admin/(protected)/events/page.tsx
-src/app/admin/(protected)/finances/page.tsx
-src/app/api/auth/[...all]/route.ts      # Library handler, signup disabled
-src/server/db.ts                       # Server-only Prisma client
-src/server/auth/{config,authorize}.ts   # Library setup, live session and permission checks
-src/server/validation/                 # Zod inputs + environment schemas
-src/server/services/dashboard.ts       # Authorized count queries, no invented metrics
-src/server/errors.ts                   # Safe domain error mapping
-src/components/admin/                  # Navigation, count cards, empty/error states
-prisma/{schema.prisma,migrations,seed.ts}
-tests/{unit,integration}/
+compose.yaml                         # Separate local dev/test PostgreSQL services and volumes
+prisma.config.ts                     # Explicit Prisma 7 config and migrations path
+prisma/schema.prisma                 # Active 12-model schema
+prisma/migrations/                   # Additive migration and custom SQL constraints
+prisma/seed-data.ts                   # Transactional, create-only synthetic fixtures
+prisma/seed.ts                        # Guarded development seed entry point
+src/server/database/environment.ts  # Zod URL parsing and strict local tooling targets
+src/server/database/client.ts       # PrismaPg client factory for server/tooling
+src/server/db.ts                     # Lazy server-only singleton, cached across dev reloads
+scripts/database-target.ts           # Live database/user identity verification
+scripts/database.ts                  # Guarded migration/status commands, no reset operation
+scripts/auth-schema.config.mts       # Development-only schema-generation configuration
+src/generated/prisma/                # Ignored; generated from the committed schema
+vitest*.mts, tests/                   # Unit/contract and isolated database tests
 ```
 
-Public page relocation and layout extraction are required to keep admin screens out of the archive shell; public rendering and content should remain identical. Login must not inherit the protected layout. Page/service checks remain mandatory even with a layout guard; no middleware-only security. Authenticated requests with no allowed role fail closed. Use section-level checks for finances and filter dashboard queries by permission.
+No public code imports the new server modules. The server-only entry point validates its environment only when requested, so public rendering does not need credentials or a live database. CLI failures use safe messages; URLs/passwords are not printed. Integration test pool errors are sanitized to prevent reporter serialization of credential-bearing connection objects.
 
-Server Actions: parse input, require session/permission, call a small service, return a discriminated success/safe-error result. Pages redirect unauthenticated visitors to `/admin/login`; Route Handlers use 401/403 rather than HTML redirects for operations. Validation errors expose field messages only; unexpected errors return a generic message with server-side diagnostics excluding secrets. Domain/database writes requiring multiple changes use one Prisma transaction. No speculative CRUD endpoints will be added. Sections initially show scoped counts/read-only examples or explicit empty/future-feature states, with `loading.tsx` and safe `error.tsx` boundaries.
+## Local setup
 
-## Local setup and validation plan
+```bash
+source "$HOME/.nvm/nvm.sh"
+nvm use
+npm ci
+cp .env.example .env
+# Edit .env: choose separate random dev/test passwords and put matching URL-encoded
+# passwords in DATABASE_URL and TEST_DATABASE_URL. Do not overwrite an existing .env.
+npm run db:up
+npm run db:validate
+npm run db:generate
+npm run db:migrate
+npm run db:seed
+npm run db:status
+npm run dev
+```
 
-**No new setup commands are available yet.** Existing public `npm run dev`, `npm run lint`, `npm run build`, and `npm run start` remain unchanged. Docker CLI is present; PostgreSQL CLI was not found. Docker daemon and database availability have not been tested. No credentials were inspected.
+For this implementation session, random local passwords were generated directly into ignored `.env` (mode 0600), without printing them. No working administrator credentials or sessions were created. `.env*` is ignored except `.env.example`; generated clients are ignored. Existing archive/image exclusions were preserved.
 
-After approval, add local PostgreSQL 17 Compose configuration if Docker is usable, a named volume and health check, and documented alternative existing-PostgreSQL setup. No production deployment infrastructure. Require an explicit test database distinct from development before integration tests; reject destructive setup/seed operations targeting unknown databases.
+Compose binds development to **127.0.0.1:5434**, database/user **liminal_dev**, and tests to **127.0.0.1:5435**, database/user **liminal_test**. Services have separate named volumes and readiness checks. `npm run db:stop` stops both without deleting data. `npm run db:up` restarts them. Do not use `docker compose down -v` unless intentionally deleting disposable data after separate review.
 
-Stage B deliverables: `.env.example` for database/auth URL/secret and a separate test URL, runtime/version instructions, client generation, initial migration, idempotent deterministic domain seed with no blanket database reset, and secure admin provisioning instructions. The environment example will contain placeholders only. Prisma config must use the agreed Prisma 7 API and explicit schema path. Document `migrate dev`, `migrate deploy`, generation, seed, test, and build commands after they actually exist. Never suggest an unapplied migration has run.
+To connect without putting passwords in arguments:
 
-Planned tests: real PostgreSQL migrations/seed idempotence, constraints and rollback; credential sign-in failure/success, persisted session and logout, disabled user, blocked signup; unauthenticated admin redirects and authenticated login redirect; role restrictions even when calling operations directly; invalid inputs and safe error responses; public URLs reachable without database/auth and public navigation unchanged. Use a dedicated test database and synthetic fixtures. Keep scheduling algorithms for Phase 5, not Phase 4.
+```bash
+docker compose exec postgres psql -U liminal_dev -d liminal_dev
+docker compose exec postgres-test psql -U liminal_test -d liminal_test
+```
 
-**Stage A validation actually performed:** inspected manifest/lockfile dependencies with `npm ls --depth=0`, Node version, source tree, existing schema, ignored/tracked archive paths, and relevant documents; checked current official compatibility guidance. Manually reviewed proposed relationships and invariants. Prisma is not installed, so the draft has **not** been validated by Prisma, migrated, seeded, or integration-tested. No new authentication/backend tests or production build were run for this documentation-only stage. Earlier Phase 3 checks are recorded separately, not claimed as Phase 4 results.
+These are local development database-owner accounts, not a production privilege design. If using another local PostgreSQL installation, create the same separate database/user identities on the documented loopback ports; guarded commands intentionally reject remote, renamed, or differently configured mutation targets until reviewed.
 
-## Decisions for approval and Phase 5 questions
+`db:migrate` calls **migrate deploy**, applying committed migrations; it does not reset or interactively resolve drift. Future schema changes should be generated as new migrations, reviewed (including custom SQL), and then applied through the guard. Initial SQL was generated with `prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script --config prisma.config.ts` before custom checks were appended and applied. Do not regenerate or edit an applied migration.
 
-Approve or amend the draft schema, Better Auth choice, application role matrix, and the prerequisite Node/Next/React compatibility upgrade before Stage B. Exact package patch versions and auth generator compatibility will be verified at implementation; substantive schema changes will be brought back for review.
+The project `postinstall` generates the ignored client automatically after `npm ci`; `npm run db:generate` is also available explicitly.
 
-Proposed defaults needing confirmation are **software choices**, not claims about historical operations: USD-only ledger, America/Phoenix timezone, weekly recurrence, effective-dated availability, operational roles with configurable qualification requirements, and replacement-style coverage rather than two-way swaps. No historical hours, maximum weekly hours, minimum rest periods, certification thresholds, approval procedures, or venue rules are inferred.
+`prisma.config.ts` uses a nonconnecting placeholder URL when no URL exists, permitting schema validation/generation without credentials. Migration and seed commands require the real URL, reject unapproved local targets, query database/user identity before writing, and refuse production mode. No reset/truncate/drop command is exposed. Public application configuration is not restricted to local URLs; only local mutation tooling is.
 
-Before Phase 5, settle qualification expiry semantics, one-off availability exceptions, whether roles require membership as well as qualifications, shift duration/capacity rules, recurrence exceptions, who approves coverage, and whether any limits or coordinator overrides should exist. Add only confirmed rules. Historical schedule/training details would require firsthand confirmation if ever represented as authentic.
+## Synthetic seed and tests
 
-Stop here for explicit approval. Stage B is database implementation; Stage C authentication; Stage D admin shell; Stage E tests/handoff. Phase 5 scheduling workflows and public deployment remain out of scope.
+Seed contents: **12 volunteers** (10 active, two inactive), **three roles**, **16 memberships**, **24 availability windows**, **two weekly patterns/definitions**, **two concrete shifts**, and **four assignments**, including multiple volunteers on one shift. Fixtures use `Demo` labels, `@example.invalid`, fixed January 2027 demonstration dates, and reserved deterministic UUIDs. No historical/private records were read or imported.
+
+The seed is one transaction of create-if-missing upserts. Reruns neither overwrite existing edits nor delete unrelated records. It is intentionally not a data-reset or fixture-synchronization command; unique-key collisions fail rather than overwrite user data.
+
+```bash
+npm test                   # Unit/contract tests; no PostgreSQL required
+npm run test:db            # Real PostgreSQL tests; requires TEST_DATABASE_URL and db:up
+npm run typecheck
+npm run lint
+npm run build
+npm run start
+```
+
+The database suite refuses a development/remote target, applies the committed migration to the dedicated test database, and tests connection, schema inventory, seed repeatability/edit preservation, create/read/update, rollback, required fields, foreign keys, uniqueness, restrictive deletion, auth UUID/cascade/set-null relationships, and SQL checks. Individual test writes are rolled back; only known synthetic seed fixtures persist. It never resets or truncates the database, and never falls back to `DATABASE_URL` if the test URL is missing.
+
+## Validation results and limitations
+
+- Prisma validation/client generation, development migration/status/seed, and test migration: passed.
+- Repeated development seed: passed. Live counts match the fixture summary; zero users/accounts/sessions seeded.
+- Read-only live-database-to-schema comparison: passed, no difference detected.
+- **Nine unit/contract tests and 19 database tests passed.** TypeScript and final full lint passed.
+- Final production build with database URLs blank and both project databases stopped: passed; all six public production routes returned 200 while PostgreSQL remained stopped. No browser/visual repetition was needed; all pre-existing public source/assets match the Stage B baseline byte for byte.
+- One later verification run was interrupted by premature database shutdown while preparing the offline check. Databases were restored, the local test credential was rotated, test pool error handling was hardened, and the targeted suite passed again. No failed/interrupted run is counted as passing.
+- No login, authorization, provisioning, admin pages, scheduling algorithms, or production deployment tested or claimed. Existing B1 tooling warnings were not reinvestigated.
+
+No substantial architectural deviation. Auth UUID default spelling/generation reconciliation, corrected client output path, native ESM extensions for tooling configurations, and explicit safety guards are implementation details of the approved design.
+
+## Stage C readiness and Phase 5 questions
+
+Stage C can use the generated client and reconciled authentication tables, but must implement/test the maintained authentication library and server-side RBAC. No public registration or administrator seed exists. Current application access roles do not confer operational volunteer roles, or vice versa.
+
+Before Phase 5: settle availability warnings/overrides, one-off exceptions, recurring-pattern edits and preservation of assigned future occurrences, certificate applicability/expiry-day semantics, and cancellation/reactivation history. Capacity/overlap checks must be revalidated inside consistently locked transactions; the unique volunteer/shift key alone is insufficient. Do not add deferred domains until their workflows are approved.
+
+Stop before Stage C; no administrative interface or scheduling workflow has been started.

@@ -1,12 +1,28 @@
 # Liminal Community Center & Cafe — Digital Historical Archive & Management Platform
 
-> **Current status — November 8, 2026:** Phase 3 content refinement is complete. Phase 4 is at the mandatory **Stage A design approval checkpoint**; no backend has been installed or implemented. Read the [backend proposal](docs/phase-4-backend.md), [proposed PostgreSQL schema](docs/proposals/phase-4-schema.prisma), and [current project status](docs/project-status.md). The older feature descriptions below predate the content refinement: essays, chronology, cafe menu/simulator, shift checklists, and unsupported team/policy claims were removed. See the [refinement report](docs/phase-3-content-refinement.md) for the actual public content.
+> **Current status — November 8, 2026:** Phase 4 **Stage B database foundation is complete**; stop before Stage C authentication. The public website is unchanged. See [backend setup and validation](docs/phase-4-backend.md), [B1 compatibility report](docs/phase-4-b1.md), and [project status](docs/project-status.md). Older public feature descriptions below predate the content refinement; see the [refinement report](docs/phase-3-content-refinement.md) for current public content.
 
-## Phase 4 setup status
+## Backend quickstart (synthetic demonstration data only)
 
-The existing public development commands below still apply. There are currently **no database migration, seed, admin-provisioning, auth, or backend test commands**. `prisma/schema.prisma` is an inactive SQLite draft, not a configured database. Do not run setup instructions from earlier planning documents as though those features exist.
+```bash
+source "$HOME/.nvm/nvm.sh"
+nvm use
+npm ci                         # Also generates the Prisma client; no DB connection needed
+cp .env.example .env            # Only if .env does not already exist
+# Edit .env: separate random dev/test passwords and matching URL-encoded URL passwords.
+npm run db:up                  # Requires Docker Desktop running
+npm run db:validate
+npm run db:migrate             # Guarded, additive committed migrations; no reset
+npm run db:seed                # Create missing fictional fixtures; preserve existing edits
+npm run db:status
+npm test
+npm run test:db                # Uses only TEST_DATABASE_URL on the separate test service
+npm run dev
+```
 
-The Stage A recommendation is PostgreSQL + Prisma 7, Better Auth, and a supported Node/Next.js runtime upgrade, with public rendering preserved. After explicit design approval, Stage B will add `.env.example`, database setup, migrations, deterministic synthetic seed instructions, and the later stages will document secure administrator provisioning and backend test/build commands. No credentials, authentication endpoints, administrative UI, or deployment were added during Stage A.
+Development database: `127.0.0.1:5434/liminal_dev`; tests: `127.0.0.1:5435/liminal_test`. Each has its own credentials and named volume. `npm run db:stop` stops both without deleting data. Never commit `.env`. The [backend guide](docs/phase-4-backend.md) explains connection commands, schema/custom constraints, test isolation, and future migrations.
+
+Node **24.22.2**, Next.js **16.4.5**, React **19.3.1**, and Prisma **7.10.1** are pinned. The public site requires no database or auth service. `npm run db:generate` regenerates the ignored Prisma client if needed; run it after schema edits. No login, administrator provisioning, admin interface, or scheduling business logic exists yet. Better Auth is installed only as development schema tooling; Stage C will implement authentication.
 
 A portfolio-quality full-stack web application preserving the history, mission, and community impact of **Liminal Community Center & Cafe**, an authentic nonprofit community living room and pay-what-you-can cafe that operated in Flagstaff, Arizona, from 2021 to 2023.
 
@@ -39,12 +55,16 @@ The public archive comprises six cohesive routes sharing a unified design system
 ## 🚀 Quickstart & Local Development
 
 ### Prerequisites
-* **Node.js**: v18.18+ or v20+
-* **npm**: v10+
+* **Node.js**: 24.22.2 (`.nvmrc` / `.node-version`); `package.json` requires Node 24.x.
+* **npm**: 11.19.1 bundled with the pinned Node runtime (used for validation).
 
 ### 1. Install Dependencies
 ```bash
-npm install
+# If nvm is installed, load it in this shell first when necessary:
+source "$HOME/.nvm/nvm.sh"
+nvm install
+nvm use
+npm ci
 ```
 
 ### 2. Start Development Server
@@ -55,6 +75,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 3. Production Build & Linting Verification
 ```bash
+npm run typecheck
 npm run lint
 npm run build
 npm run start
@@ -128,7 +149,7 @@ npm run start
 ├── next.config.mjs               # Static unoptimized images, redirects & Webpack config
 ├── tailwind.config.ts            # Custom color palette & font configuration
 ├── tsconfig.json                 # TypeScript strict configuration
-└── package.json                  # Next.js 14, React 18, Lucide React, Tailwind
+└── package.json                  # Next.js 16, React 19, Lucide React, Tailwind
 ```
 
 ---

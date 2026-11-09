@@ -20,8 +20,8 @@ next-env.d.ts
 *.pem
 
 # Local env files
-.env*.local
-.env
+.env*
+!.env.example
 
 # Debug / logs
 npm-debug.log*
@@ -42,3 +42,6 @@ yarn-error.log*
 # Historical raw references & archives containing private records
 /references/
 
+
+# Prisma client is generated from the committed schema
+/src/generated/prisma/

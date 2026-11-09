@@ -3,29 +3,55 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "db:up": "docker compose up -d --wait",
+    "db:stop": "docker compose stop",
+    "db:validate": "prisma validate --config prisma.config.ts",
+    "db:generate": "prisma generate --config prisma.config.ts",
+    "db:migrate": "tsx scripts/database.ts migrate development",
+    "db:status": "tsx scripts/database.ts status development",
+    "db:seed": "tsx prisma/seed.ts",
+    "test": "vitest run",
+    "test:db": "vitest run --config vitest.database.config.mts",
+    "auth:schema": "auth generate --config scripts/auth-schema.config.mts --adapter prisma --dialect postgresql --output docs/generated/better-auth-1.7.18.prisma --yes",
+    "postinstall": "prisma generate --config prisma.config.ts"
   },
   "dependencies": {
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.460.0",
-    "next": "^14.2.18",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "tailwind-merge": "^2.5.4"
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "clsx": "2.1.1",
+    "lucide-react": "0.460.0",
+    "next": "16.4.5",
+    "pg": "8.23.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "server-only": "0.0.1",
+    "tailwind-merge": "2.6.1",
+    "zod": "4.6.7"
   },
   "devDependencies": {
-    "@types/node": "^20.17.6",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "autoprefixer": "^10.4.20",
-    "eslint": "^8.57.1",
-    "eslint-config-next": "^14.2.18",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.15",
-    "typescript": "^5.6.3"
+    "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "auth": "1.7.18",
+    "autoprefixer": "10.6.2",
+    "better-auth": "1.7.18",
+    "dotenv": "18.0.10",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.5",
+    "postcss": "8.5.32",
+    "prisma": "7.10.1",
+    "tailwindcss": "3.4.19",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vitest": "5.1.0"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }
-

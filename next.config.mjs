@@ -1,6 +1,11 @@
+import { fileURLToPath } from "node:url";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Keep development startup from creating or rewriting repository agent instructions.
+  agentRules: false,
+  outputFileTracingRoot: fileURLToPath(new URL(".", import.meta.url)),
   transpilePackages: ["lucide-react"],
   images: {
     unoptimized: true, // Allows serving local archive images cleanly without external loader issues
