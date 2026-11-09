@@ -1,160 +1,117 @@
 export interface HistoricalEvent {
   id: string;
   title: string;
-  dateStr: string;
+  dateStr?: string;
+  timeStr?: string;
   category: "mutual-aid" | "music" | "education" | "arts" | "community";
   categoryLabel: string;
-  timeStr: string;
   description: string;
   organizer?: string;
   flyerSrc?: string;
-  featured?: boolean;
 }
 
+// Public summaries only. Sources and unresolved dates are documented in the refinement report.
 export const HISTORICAL_EVENTS: HistoricalEvent[] = [
   {
-    id: "opening-night",
-    title: "Liminal Opening Night Celebration",
-    dateStr: "Saturday, March 27, 2021",
-    timeStr: "7:00 PM – 10:00 PM",
-    category: "community",
-    categoryLabel: "Community Celebration",
-    description:
-      "The inaugural launch celebration introducing Liminal to Flagstaff. Community members came together to celebrate a new people's space with live music, coffee, tea, and communal dialogue.",
-    organizer: "Liminal Co-Founders",
-    featured: true,
+    "id": "opening-night",
+    "title": "Liminal's Opening Night",
+    "dateStr": "Saturday, March 27, 2021",
+    "timeStr": "7:00 PM – 10:00 PM",
+    "category": "community",
+    "categoryLabel": "Community Gathering",
+    "description": "The original website announced an opening night with drinks, snacks, art, and conversation."
   },
   {
-    id: "monthly-narcan",
-    title: "Monthly Community Narcan Training",
-    dateStr: "Thursday, May 25, 2023",
-    timeStr: "6:00 PM – 7:30 PM",
-    category: "mutual-aid",
-    categoryLabel: "Harm Reduction & Health",
-    description:
-      "Rapidly reverse an opioid overdose using Narcan (Naloxone). Hands-on overdose response training provided with each free kit. Learn about signs and symptoms of an overdose, how to administer lifesaving care, and Arizona Good Samaritan laws.",
-    organizer: "Sonoran Prevention Works & Liminal",
-    flyerSrc: "/images/archival/flyer-narcan.png",
-    featured: true,
+    "id": "monthly-narcan",
+    "title": "Monthly Narcan Training",
+    "dateStr": "Thursday, May 25, 2023",
+    "timeStr": "6:00 PM – 7:30 PM",
+    "category": "mutual-aid",
+    "categoryLabel": "Harm Reduction",
+    "description": "The archived event listing advertised training in recognizing and responding to opioid overdoses, with free Narcan kits."
   },
   {
-    id: "working-class-movie-night",
-    title: "Working Class Movie Night: '9 To 5'",
-    dateStr: "Wednesday, May 24, 2023",
-    timeStr: "6:00 PM – 8:30 PM",
-    category: "education",
-    categoryLabel: "Political Education & Film",
-    description:
-      "Film showing and post-film discussion of the workplace comedy and labor organizing classic '9 to 5'. Free admission, free popcorn, with open discussion on clerical worker solidarity and workplace empowerment.",
-    organizer: "Flagstaff Industrial Workers of the World (IWW)",
-    featured: true,
+    "id": "working-class-movie-night",
+    "title": "Working Class Movie Night: '9 To 5'",
+    "dateStr": "Wednesday, May 24, 2023",
+    "category": "education",
+    "categoryLabel": "Film & Discussion",
+    "description": "The archived calendar listed a screening of “9 To 5” hosted by Flagstaff Industrial Workers of the World.",
+    "organizer": "Flagstaff Industrial Workers of the World (IWW)"
   },
   {
-    id: "renegade-art-party",
-    title: "Renegade First Friday Art Party",
-    dateStr: "Friday, December 2, 2022",
-    timeStr: "5:00 PM – 9:00 PM",
-    category: "arts",
-    categoryLabel: "Community Arts & Gallery",
-    description:
-      "First Friday exhibition featuring collaborative collage-making with Northern Arizona University art students. Live visual art, experimental soundscapes, and free art supplies for attendees to craft community art pieces.",
-    organizer: "Riley Shorthair & NAU Art Collective",
-    flyerSrc: "/images/archival/flyer-renegade.png",
-    featured: true,
+    "id": "renegade-art-party",
+    "title": "Renegade Art Party",
+    "dateStr": "January 7 (year not recorded)",
+    "timeStr": "7:00 PM – 11:00 PM",
+    "category": "arts",
+    "categoryLabel": "Community Arts",
+    "description": "The flyer advertised exhibitions, free art supplies, and local DJs for a First Friday art party.",
+    "flyerSrc": "/images/archival/flyer-renegade.png"
   },
   {
-    id: "open-jazz-jam",
-    title: "Open Jazz Jam & Extended Cafe Night",
-    dateStr: "Recurring Bi-Weekly Thursdays",
-    timeStr: "7:00 PM – 10:00 PM",
-    category: "music",
-    categoryLabel: "Live Music & Culture",
-    description:
-      "An acoustic jam session co-facilitated with NAU jazz department musicians. Local instrumentalists sat in to play standards together for a listening community audience, accompanied by volunteer baristas serving espresso and wine.",
-    organizer: "Josh Moore, Rob Wallace & Arie Werbrouke",
-    flyerSrc: "/images/archival/flyer-jazz.png",
-    featured: true,
+    "id": "open-jazz-jam",
+    "title": "Open Jazz Jam + extended cafe hours",
+    "dateStr": "Fourth Thursdays",
+    "timeStr": "7:00 PM – 10:00 PM",
+    "category": "music",
+    "categoryLabel": "Live Music",
+    "description": "The flyer invited jazz players to sit in for an open jam, with cafe drinks available."
   },
   {
-    id: "queer-game-night",
-    title: "Queer Board Game & Social Night",
-    dateStr: "Recurring Monthly Tuesdays",
-    timeStr: "6:30 PM – 9:30 PM",
-    category: "community",
-    categoryLabel: "LGBTQ+ Community",
-    description:
-      "A welcoming, sober-friendly social gathering for LGBTQ+ community members and allies. Tabletop board games, deck builders, tea, and warm snacks in a safe, affirming community space.",
-    organizer: "Flagstaff Pride & Queer Youth Collective",
-    flyerSrc: "/images/archival/flyer-queer-game-night.jpg",
+    "id": "queer-game-night",
+    "title": "Queer Game Night",
+    "category": "community",
+    "categoryLabel": "LGBTQ+ Community",
+    "description": "A board game gathering advertised by the NAU LGBTQIA Commission.",
+    "organizer": "NAU LGBTQIA Commission",
+    "flyerSrc": "/images/archival/flyer-queer-game-night.jpg"
   },
   {
-    id: "wrecking-ball-party",
-    title: "Wrecking Ball: Queer Dance Benefit for Bail Funds",
-    dateStr: "Special Event",
-    timeStr: "8:00 PM – Late",
-    category: "mutual-aid",
-    categoryLabel: "Benefit & Mutual Aid",
-    description:
-      "An energetic queer dance party where 100% of admission donations were directly channeled to local indigenous and immigrant bail relief funds. Featured guest DJs, screenprinting, and wheat-pasting workshops.",
-    organizer: "Tam & Seeding Sovereignty",
+    "id": "wrecking-ball-party",
+    "title": "Wrecking Ball",
+    "category": "mutual-aid",
+    "categoryLabel": "Benefit & Mutual Aid",
+    "description": "The event description outlined a queer dance party with DJs and entry proceeds going to bail bond funds."
   },
   {
-    id: "clothing-swap-winter-drive",
-    title: "All-Gender Clothing Swap & Winter Gear Drive",
-    dateStr: "November 20 – December 1, 2022",
-    timeStr: "During Cafe Hours",
-    category: "mutual-aid",
-    categoryLabel: "Direct Mutual Aid",
-    description:
-      "Community resource exchange collecting heavy winter coats, low-temp sleeping bags, wool socks, and hand warmers. Everything was distributed 100% free of charge to unhoused community members during cold Flagstaff winter freezes.",
-    organizer: "Liminal Mutual Aid Team",
+    "id": "clothing-swap-winter-drive",
+    "title": "All Gender Clothing Swap + Winter Clothing Drive",
+    "category": "mutual-aid",
+    "categoryLabel": "Mutual Aid",
+    "description": "The event description invited people to donate and exchange clothing and warm winter resources."
   },
   {
-    id: "art-therapy-workshops",
-    title: "Community Art Therapy & Healing Workshop",
-    dateStr: "Recurring Monthly Saturdays",
-    timeStr: "2:00 PM – 4:00 PM",
-    category: "arts",
-    categoryLabel: "Workshops & Healing",
-    description:
-      "Accessible expressive arts workshop taught by volunteer art therapists. Participants used mixed media, paint, and clay to explore personal healing, somatic grounding, and collective resilience.",
-    organizer: "Estefania Villaquirán",
-    flyerSrc: "/images/archival/flyer-art-therapy.jpg",
+    "id": "art-therapy-workshops",
+    "title": "Jardines Mentales (Mental Gardens): Art Therapy Workshops",
+    "dateStr": "Select Thursdays",
+    "timeStr": "4:00 PM – 6:00 PM",
+    "category": "arts",
+    "categoryLabel": "Art Workshops",
+    "description": "The workshop flyer advertised a different mental wellness topic each month."
   },
   {
-    id: "capoeira-angola",
-    title: "Afro-Brazilian Capoeira Performance & Workshop",
-    dateStr: "Special Community Workshop",
-    timeStr: "6:00 PM – 8:00 PM",
-    category: "music",
-    categoryLabel: "Movement & Culture",
-    description:
-      "An introduction to Capoeira Angola movement, berimbau rhythms, and Afro-Brazilian resistance traditions. Led by local educational nonprofit Centro de Capoeira Angola Ouroverde Flagstaff.",
-    organizer: "Centro de Capoeira Angola Ouroverde",
-    flyerSrc: "/images/archival/flyer-capoeira.jpg",
+    "id": "capoeira-angola",
+    "title": "Capoeira Angola",
+    "dateStr": "Third Fridays",
+    "timeStr": "6:00 PM – 8:00 PM",
+    "category": "music",
+    "categoryLabel": "Movement & Culture",
+    "description": "The flyer advertised capoeira presented by Centro de Capoeira Angola Ouroverde.",
+    "organizer": "Centro de Capoeira Angola Ouroverde"
   },
   {
-    id: "political-education-class",
-    title: "Political Education: Power, Resistance & Possibilities",
-    dateStr: "Semester-Long Reading Series",
-    timeStr: "Weekly Wednesdays 5:30 PM",
-    category: "education",
-    categoryLabel: "Political Education",
-    description:
-      "Free discussion-based seminar on ongoing settler colonialism, US labor history, and grassroots community organizing frameworks, taught by local radical educator Emily Davalos.",
-    organizer: "Emily Davalos",
-    flyerSrc: "/images/archival/flyer-revolution.jpg",
+    "id": "political-education-class",
+    "title": "Political Education Class",
+    "category": "education",
+    "categoryLabel": "Political Education",
+    "description": "The event description outlined a free discussion class about racism, colonial rule, and US power abroad. It described a semester-long syllabus, with drop-ins welcome."
   },
   {
-    id: "bake-sale-fundraiser",
-    title: "Volunteer Bake-Off & Rent Fundraiser",
-    dateStr: "Quarterly Community Event",
-    timeStr: "10:00 AM – 6:00 PM",
-    category: "community",
-    categoryLabel: "Community Fundraiser",
-    description:
-      "Volunteer bakers competed in a friendly community pastry competition. All pastries were sold by donation at the cafe counter, with 100% of proceeds supporting Liminal's monthly rent overhead.",
-    organizer: "Liminal Fundraising Team",
-  },
+    "id": "bake-sale-fundraiser",
+    "title": "Bake Sale Competition Fundraiser",
+    "category": "community",
+    "categoryLabel": "Community Fundraiser",
+    "description": "The event description outlined a volunteer bake-off, with pastries sold at Liminal and proceeds supporting the space."
+  }
 ];
-

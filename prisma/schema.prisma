@@ -1,0 +1,277 @@
+// Prisma Schema for Liminal Management Platform
+// Documented in docs/database-design.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// =========================================================================
+// 1. IDENTITY & AUTHENTICATION (Auth.js / NextAuth v5 Compatible)
+// =========================================================================
+
+enum Role {
+  BOARD_ADMIN
+  COORDINATOR
+  BARISTA
+  GENERAL_VOLUNTEER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  role          String    @default("GENERAL_VOLUNTEER") // Stored as string for SQLite enum compatibility
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts         Account[]
+  sessions         Session[]
+  volunteerProfile VolunteerProfile?
+  transactions     Transaction[]     @relation("TransactionCreator")
+  auditLogs        AuditLog[]
+
+  @@index([email])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// =========================================================================
+// 2. VOLUNTEER & SCHEDULING DOMAIN
+// =========================================================================
+
+enum VolunteerTeam {
+  CAFE
+  EVENTS
+  FACILITIES
+  OUTREACH
+  GENERAL
+}
+
+enum VolunteerTier {
+  WEEKLY_BARISTA
+  CAFE_SUPPORT_POOL
+  OCCASIONAL
+  INACTIVE
+}
+
+model VolunteerProfile {
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+  team                    String   @default("GENERAL") // CAFE, EVENTS, FACILITIES, etc.
+  tier                    String   @default("OCCASIONAL") // WEEKLY_BARISTA, CAFE_SUPPORT_POOL, etc.
+  isCertifiedBarista      Boolean  @default(false)
+  trainingShiftsCompleted Int      @default(0) // Minimum 2 weekend training shifts required
+  maxWeeklyHours          Int      @default(4)
+  notes                   String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  availabilities   Availability[]
+  shiftAssignments ShiftAssignment[]
+  swapRequestsMade ShiftSwapRequest[]  @relation("SwapRequester")
+  swapRequestsClaimed ShiftSwapRequest[] @relation("SwapClaimer")
+
+  @@index([team])
+  @@index([tier])
+  @@index([isCertifiedBarista])
+}
+
+model Availability {
+  id          String   @id @default(cuid())
+  volunteerId String
+  dayOfWeek   Int      // 0 = Sunday, 1 = Monday ... 6 = Saturday
+  startTime   String   // e.g. "10:00"
+  endTime     String   // e.g. "14:00"
+  createdAt   DateTime @default(now())
+
+  volunteer VolunteerProfile @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+
+  @@index([volunteerId])
+  @@index([dayOfWeek])
+}
+
+model Shift {
+  id           String   @id @default(cuid())
+  date         String   // ISO YYYY-MM-DD for simple portable querying
+  startTime    String   // e.g. "10:00"
+  endTime      String   // e.g. "14:00"
+  roleRequired String   // "BARISTA", "OPENER", "CLOSER", "EVENT_DOOR", "AV_TECH"
+  status       String   @default("SCHEDULED") // "SCHEDULED", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED", "NEEDS_COVERAGE"
+  eventId      String?
+  capacity     Int      @default(1)
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  event       Event?            @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  assignments ShiftAssignment[]
+
+  @@index([date])
+  @@index([status])
+  @@index([roleRequired])
+}
+
+model ShiftAssignment {
+  id           String    @id @default(cuid())
+  shiftId      String
+  volunteerId  String
+  status       String    @default("ASSIGNED") // "ASSIGNED", "CONFIRMED", "CHECKED_IN", "COMPLETED", "NO_SHOW"
+  checkedInAt  DateTime?
+  checkedOutAt DateTime?
+  notes        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  shift       Shift             @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  volunteer   VolunteerProfile  @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+  swapRequest ShiftSwapRequest?
+
+  @@unique([shiftId, volunteerId])
+  @@index([shiftId])
+  @@index([volunteerId])
+  @@index([status])
+}
+
+model ShiftSwapRequest {
+  id           String    @id @default(cuid())
+  assignmentId String    @unique
+  requesterId  String
+  claimedById  String?
+  status       String    @default("OPEN") // "OPEN", "CLAIMED", "APPROVED", "REJECTED", "EXPIRED"
+  reason       String?
+  approvedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  assignment ShiftAssignment  @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  requester  VolunteerProfile @relation("SwapRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  claimedBy  VolunteerProfile? @relation("SwapClaimer", fields: [claimedById], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([requesterId])
+}
+
+// =========================================================================
+// 3. FINANCIAL & ACCOUNTING LEDGER
+// =========================================================================
+
+model Transaction {
+  id            String   @id @default(cuid())
+  type          String   // "REVENUE" or "EXPENSE"
+  amountInCents Int      // Exact integer cents to avoid floating point math
+  date          String   // ISO YYYY-MM-DD
+  department    String   // "CAFE", "RENT_UTILITIES", "RENOVATION", "ART_SUPPLIES", "HARM_REDUCTION", "EVENTS", "GENERAL"
+  paymentMethod String   // "CASH", "CARD", "BANK_TRANSFER", "ONLINE_DONATION", "CHECK"
+  projectTag    String?  // e.g. "2022_RENOVATION", "WINTER_DRIVE"
+  receiptUrl    String?
+  description   String
+  createdById   String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  createdBy User @relation("TransactionCreator", fields: [createdById], references: [id])
+
+  @@index([type])
+  @@index([date])
+  @@index([department])
+}
+
+model Budget {
+  id                  String   @id @default(cuid())
+  fiscalYear          Int
+  fiscalMonth         Int      // 1 - 12
+  department          String
+  targetAmountInCents Int
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([fiscalYear, fiscalMonth, department])
+  @@index([fiscalYear, fiscalMonth])
+}
+
+// =========================================================================
+// 4. EVENTS & AUDIT LOGGING
+// =========================================================================
+
+model Event {
+  id           String   @id @default(cuid())
+  title        String
+  category     String   // "mutual-aid", "music", "education", "arts", "community"
+  date         String   // ISO YYYY-MM-DD
+  startTime    String
+  endTime      String
+  description  String
+  organizer    String?
+  flyerUrl     String?
+  isPublic     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  shifts Shift[]
+
+  @@index([date])
+  @@index([category])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String   // e.g. "SHIFT_CREATED", "SWAP_APPROVED", "TRANSACTION_LOGGED"
+  entity    String   // "Shift", "VolunteerProfile", "Transaction"
+  entityId  String
+  details   String?  // JSON string of changes
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+

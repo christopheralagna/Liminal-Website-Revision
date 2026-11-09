@@ -10,79 +10,63 @@ export interface FacilityArea {
 
 export const FACILITIES: FacilityArea[] = [
   {
-    id: "cafe-bar",
-    name: "The Pay-What-You-Can Cafe Bar",
-    subtitle: "Third-wave espresso, artisan teas, and free barista job training",
-    description:
-      "Our volunteer-run cafe served as the welcoming entry point to Liminal. Equipped with commercial grinders, espresso machines, and pour-over stations, it provided Flagstaff with quality coffee regardless of a patron's ability to pay. It also served as an open job-training platform, providing volunteer baristas with comprehensive craft coffee experience.",
-    features: [
-      "Third-wave pour-overs, cold brew, and espresso drinks",
-      "Pay-what-you-can & sliding-scale equity pricing",
-      "Free 2-weekend barista job training for volunteers",
-      "Partnership with local food cooperative Evolve Eats",
+    "id": "cafe-bar",
+    "name": "The Cafe",
+    "subtitle": "Coffee, tea, and food",
+    "description": "The volunteer-run cafe offered drinks and food on a pay-what-you-can basis. Visitors were welcome regardless of their ability to pay.",
+    "features": [
+      "Coffee and tea",
+      "Pay-what-you-can approach"
     ],
-    imageSrc: "/images/archival/cafe-bar.jpg",
-    imageAlt: "Barista pouring honey and tea behind the wooden cafe counter at Liminal",
+    "imageSrc": "/images/archival/cafe-bar.jpg",
+    "imageAlt": "Preparing a drink at the cafe counter"
   },
   {
-    id: "art-supply-room",
-    name: "The Free Art Supply Room",
-    subtitle: "All mediums free and accessible to community creators",
-    description:
-      "Art supplies are often prohibitively expensive. Liminal opened an entirely free supply room stocked with artist-grade acrylic paints, spray paints, colored pencils, drawing papers, fabric dyes, and brushes. Anyone visiting the center was invited to borrow materials or work on projects in the room without charge.",
-    features: [
-      "Color-sorted acrylic paints, inks, and spray paint cans",
-      "Free sketchbooks, canvases, and craft textiles",
-      "Community donation station for surplus creative materials",
-      "No reservation or checkout fees required",
+    "id": "art-supply-room",
+    "name": "The Art Supply Room",
+    "subtitle": "Materials for making art",
+    "description": "Visitors could use art materials during open hours, including colored pencils, markers, paints, and textiles.",
+    "features": [
+      "Art supplies for visitors to use",
+      "Space for creative projects"
     ],
-    imageSrc: "/images/archival/art-room.jpg",
-    imageAlt: "Shelves stocked with colored markers, tubes of acrylic paint, and paper supplies",
+    "imageSrc": "/images/archival/art-room.jpg",
+    "imageAlt": "Shelves of art supplies at Liminal"
   },
   {
-    id: "radical-library",
-    name: "The Radical Library & Zine Archive",
-    subtitle: "Anti-capitalist theory, labor history, and grassroots zines",
-    description:
-      "Liminal curated a physical collection of independent literature, grassroots pamphlets, and books exploring anti-capitalism, feminist philosophy, indigenous sovereignty, mutual aid, and civil rights. The space was furnished with comfortable reading armchairs and study desks.",
-    features: [
-      "Over 300 curated titles on labor history, mutual aid, and social ecology",
-      "Grassroots local zines and self-published community poetry",
-      "Free study and quiet reading spaces with high-speed Wi-Fi",
-      "Honor-system reading and lending model",
+    "id": "radical-library",
+    "name": "The Radical Library",
+    "subtitle": "Books to read at the center",
+    "description": "The library held books exploring left-wing and anti-capitalist ideas. Visitors could read at the center; the archived facilities page described lending as a future plan.",
+    "features": [
+      "Books on politics and social issues",
+      "Reading at the center"
     ],
-    imageSrc: "/images/archival/radical-library.jpg",
-    imageAlt: "Community members browsing books along the radical library shelves",
+    "imageSrc": "/images/archival/radical-library.jpg",
+    "imageAlt": "People gathered beside the library shelves"
   },
   {
-    id: "multimedia-room",
-    name: "The Multimedia & Event Space",
-    subtitle: "Coworking studio by day, vibrant community assembly by night",
-    description:
-      "A flexible mixed-use room featuring a high-definition digital projector, professional sound gear, folding tables, and modular seating. During daytime hours, it functioned as a free public workspace. In the evenings, it transformed into an assembly hall for film screenings, union meetings, and musical performances.",
-    features: [
-      "HD digital projector and sound system for screenings and talks",
-      "Modular tables accommodating up to 40 participants",
-      "Public venue hosting local nonprofits and solidarity groups",
-      "Governed by Liminal's anti-oppressive Venue Right of Refusal",
+    "id": "multimedia-room",
+    "name": "The Multimedia Room",
+    "subtitle": "Art-making and community events",
+    "description": "The room was used for art-making during the day and community events in the evening, including film screenings, presentations, and meetings.",
+    "features": [
+      "Audiovisual equipment",
+      "Round-table seating"
     ],
-    imageSrc: "/images/archival/multimedia-room.jpg",
-    imageAlt: "Multimedia room with meeting tables, monitor, and art-making workstations",
+    "imageSrc": "/images/archival/multimedia-room.jpg",
+    "imageAlt": "Tables and work areas in the multimedia room"
   },
   {
-    id: "harm-reduction-station",
-    name: "The Mutual Aid & Harm Reduction Station",
-    subtitle: "Low-barrier overdose reversal supplies and street medicine kits",
-    description:
-      "In solidarity with Sonoran Prevention Works (SPW), Liminal maintained a dedicated station offering free, anonymous harm reduction supplies. We believed deeply in harm reduction as healthcare and bodily autonomy, distributing hundreds of Naloxone kits and safe-use materials directly to our neighbors.",
-    features: [
-      "Free Naloxone (Narcan) nasal spray kits with overdose instructions",
-      "Fentanyl test strips, wound care items, and hygiene kits",
-      "Strictly anonymous distribution with zero identification barriers",
-      "Monthly community overdose reversal trainings open to the public",
+    "id": "harm-reduction-station",
+    "name": "Harm Reduction Supplies",
+    "subtitle": "Free supplies and information",
+    "description": "Liminal offered harm reduction supplies and hosted kit-making with Sonoran Prevention Works. Kits included hygiene, wound-care, and safer-use materials.",
+    "features": [
+      "Free harm reduction kits",
+      "Kit-making gatherings"
     ],
-    imageSrc: "/images/archival/harm-reduction-spw.jpg",
-    imageAlt: "Harm reduction kits, Narcan doses, and informational pamphlets on the resource table",
-  },
+    "imageSrc": "/images/archival/harm-reduction-spw.jpg",
+    "imageAlt": "Harm reduction resources at Liminal"
+  }
 ];
-

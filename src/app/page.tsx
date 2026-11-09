@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -13,18 +11,13 @@ import {
   Sparkles,
   ArrowRight,
   BookOpen,
-  ShieldCheck,
   CheckCircle2,
   DollarSign,
-  X,
 } from "lucide-react";
 import { ResourceCarousel } from "@/components/public/ResourceCarousel";
-import { ArchiveDialog } from "@/components/public/ArchiveDialog";
 import { ArchedPhoto } from "@/components/public/ArchedPhoto";
 
 export default function HomePage() {
-  const [activeModal, setActiveModal] = useState<"menu" | "teams" | "story" | null>(null);
-
   return (
     <div className="flex flex-col min-h-screen">
       {/* =========================================================================
@@ -191,21 +184,19 @@ export default function HomePage() {
 
               {/* Action Buttons */}
               <div className="pt-4 flex flex-wrap items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => setActiveModal("teams")}
+                <Link
+                  href="/community"
                   className="px-7 py-3 rounded-full bg-terracotta-500 hover:bg-terracotta-600 text-cream-50 font-medium text-sm transition-all shadow-md shadow-terracotta-600/30 flex items-center gap-2"
                 >
-                  Explore Volunteer Teams
+                  <span>Explore Volunteer Teams</span>
                   <ArrowRight className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveModal("story")}
+                </Link>
+                <Link
+                  href="/about"
                   className="px-6 py-3 rounded-full border border-peach-300/40 text-peach-300 hover:bg-peach-300/10 font-medium text-sm transition-colors"
                 >
                   Our Philosophy
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -266,15 +257,14 @@ export default function HomePage() {
               </div>
 
               {/* Interactive Menu Trigger */}
-              <div className="pt-2 flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => setActiveModal("menu")}
+              <div className="pt-2 flex flex-wrap items-center gap-4">
+                <Link
+                  href="/cafe"
                   className="px-6 py-3 rounded-full bg-terracotta-500 hover:bg-terracotta-600 text-cream-50 font-medium text-sm transition-colors shadow-md shadow-terracotta-600/20 flex items-center gap-2"
                 >
                   <Coffee className="w-4 h-4" />
-                  View Historical Cafe Menu
-                </button>
+                  <span>View Historical Café &amp; Equity Model</span>
+                </Link>
               </div>
             </div>
 
@@ -365,264 +355,18 @@ export default function HomePage() {
                 offering free arts, nutritious meals on sliding scales, radical literature, and mutual aid.
               </p>
               <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveModal("story")}
+                <Link
+                  href="/about"
                   className="inline-flex items-center gap-2 text-peach-300 hover:text-peach-100 font-medium text-sm group"
                 >
-                  <span>Read the full founding narrative & essays</span>
+                  <span>Read the full founding narrative &amp; essays</span>
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </button>
+                </Link>
               </div>
             </div>
           </div>
         </div>
       </section>
-
-      {/* =========================================================================
-          INTERACTIVE MODALS
-         ========================================================================= */}
-
-      {/* Modal 1: Historical Cafe Menu */}
-      {activeModal === "menu" && (
-        <ArchiveDialog title="Historical Cafe Menu (2021)" onClose={() => setActiveModal(null)}>
-          <div className="bg-charcoal-900 border border-charcoal-700 rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-charcoal-800 pb-4">
-              <div className="flex items-center gap-2">
-                <Coffee className="w-5 h-5 text-peach-300" />
-                <h3 className="text-xl sm:text-2xl font-semibold text-cream-50">
-                  Historical Cafe Menu (2021)
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setActiveModal(null)}
-                className="text-cream-400 hover:text-cream-100 p-1.5 rounded-lg hover:bg-charcoal-800"
-                aria-label="Close dialog"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Note on Payment Model */}
-            <div className="p-4 rounded-xl bg-terracotta-500/20 border border-terracotta-400/40 text-sm text-cream-200 space-y-1">
-              <h4 className="font-semibold text-peach-200">The &ldquo;Pay High // Pay Low&rdquo; Model</h4>
-              <p className="font-normal">
-                Having expendable funds was recognized as an uncertainty for many community members.
-                Those who could &ldquo;pay high&rdquo; provided an overcharge that directly covered the
-                cost for those who could only &ldquo;pay low&rdquo;. No one was ever turned away.
-              </p>
-            </div>
-
-            {/* Beverages */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-semibold uppercase tracking-wider text-peach-300">
-                Beverages (Historical Base Prices)
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-cream-200">
-                <div className="flex justify-between p-2 rounded bg-charcoal-950/60">
-                  <span>Drip Coffee</span>
-                  <span className="font-mono text-peach-200">$2.00</span>
-                </div>
-                <div className="flex justify-between p-2 rounded bg-charcoal-950/60">
-                  <span>Cold Brew</span>
-                  <span className="font-mono text-peach-200">$3.00</span>
-                </div>
-                <div className="flex justify-between p-2 rounded bg-charcoal-950/60">
-                  <span>Pour Over</span>
-                  <span className="font-mono text-peach-200">$4.00</span>
-                </div>
-                <div className="flex justify-between p-2 rounded bg-charcoal-950/60">
-                  <span>House Blended Tea</span>
-                  <span className="font-mono text-peach-200">$2.00</span>
-                </div>
-                <div className="flex justify-between p-2 rounded bg-charcoal-950/60">
-                  <span>House Wine (Red / White)</span>
-                  <span className="font-mono text-peach-200">$4.00</span>
-                </div>
-                <div className="flex justify-between p-2 rounded bg-charcoal-950/60">
-                  <span>The House Drink</span>
-                  <span className="font-mono text-peach-200">$3.00</span>
-                </div>
-              </div>
-              <p className="text-xs text-cream-400 italic">
-                *The House Drink: iced black tea, vanilla bergamot, black currant, and oat milk.
-              </p>
-            </div>
-
-            {/* Small Plates with Partner Evolve Eats */}
-            <div className="space-y-3 pt-2">
-              <h4 className="text-sm font-semibold uppercase tracking-wider text-peach-300">
-                Small Plates (Crafted with Local Partner &ldquo;Evolve Eats&rdquo;)
-              </h4>
-              <div className="space-y-2 text-sm text-cream-200">
-                <div className="p-2.5 rounded bg-charcoal-950/60">
-                  <div className="flex justify-between font-medium text-cream-100">
-                    <span>Two Toast</span>
-                    <span className="font-mono text-peach-200">$8.00</span>
-                  </div>
-                  <p className="text-xs text-cream-400 mt-0.5">
-                    1) Avocado, pickled onion, pomegranate, cilantro aioli. 2) Ricotta, fig spread, bee pollen.
-                  </p>
-                </div>
-                <div className="p-2.5 rounded bg-charcoal-950/60">
-                  <div className="flex justify-between font-medium text-cream-100">
-                    <span>Vegan Banh Mi</span>
-                    <span className="font-mono text-peach-200">$8.00</span>
-                  </div>
-                  <p className="text-xs text-cream-400 mt-0.5">
-                    Toasted ciabatta, ginger seared tofu, wasabi vegan mayo, pickled veggies, mixed greens.
-                  </p>
-                </div>
-                <div className="p-2.5 rounded bg-charcoal-950/60">
-                  <div className="flex justify-between font-medium text-cream-100">
-                    <span>Vegan Sushi Roll (GF)</span>
-                    <span className="font-mono text-peach-200">$6.00</span>
-                  </div>
-                  <p className="text-xs text-cream-400 mt-0.5">
-                    Mango, avocado, cucumber, roasted sweet potato, carrot, black sesame, citrus ponzu.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2 text-right">
-              <button
-                type="button"
-                onClick={() => setActiveModal(null)}
-                className="px-5 py-2 rounded-full bg-charcoal-800 text-cream-200 hover:bg-charcoal-700 text-xs font-medium"
-              >
-                Close Menu
-              </button>
-            </div>
-          </div>
-        </ArchiveDialog>
-      )}
-
-      {/* Modal 2: Volunteer Teams Breakdown */}
-      {activeModal === "teams" && (
-        <ArchiveDialog title="Autonomous Volunteer Teams" onClose={() => setActiveModal(null)}>
-          <div className="bg-charcoal-900 border border-charcoal-700 rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-charcoal-800 pb-4">
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-peach-300" />
-                <h3 className="text-xl sm:text-2xl font-semibold text-cream-50">
-                  Liminal Volunteer Teams Structure
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setActiveModal(null)}
-                className="text-cream-400 hover:text-cream-100 p-1.5 rounded-lg hover:bg-charcoal-800"
-                aria-label="Close dialog"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <p className="text-sm text-cream-300 font-normal">
-              Liminal recruited by team rather than isolated job descriptions. Each team was
-              autonomously coordinated through designated Slack channels and weekly in-person
-              gatherings.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-              <div className="p-3.5 rounded-xl bg-charcoal-950 border border-charcoal-800">
-                <h4 className="font-semibold text-peach-200">1. Cafe Baristas & Support Pool</h4>
-                <p className="text-xs text-cream-400 mt-1">
-                  Operated the espresso bar in 4-hour shifts. Prospective volunteers completed two
-                  weekend training shifts to master third-wave coffee standards.
-                </p>
-              </div>
-              <div className="p-3.5 rounded-xl bg-charcoal-950 border border-charcoal-800">
-                <h4 className="font-semibold text-peach-200">2. Events & Partnerships</h4>
-                <p className="text-xs text-cream-400 mt-1">
-                  Vetted event proposals against anti-oppressive guidelines, managed AV gear, and
-                  coordinated door staffing for workshops and music performances.
-                </p>
-              </div>
-              <div className="p-3.5 rounded-xl bg-charcoal-950 border border-charcoal-800">
-                <h4 className="font-semibold text-peach-200">3. Art Exhibition Curators</h4>
-                <p className="text-xs text-cream-400 mt-1">
-                  Selected local Flagstaff artists for monthly wall displays, managed artwork sales
-                  splits, and hosted First Friday art parties.
-                </p>
-              </div>
-              <div className="p-3.5 rounded-xl bg-charcoal-950 border border-charcoal-800">
-                <h4 className="font-semibold text-peach-200">4. Mutual Aid & Harm Reduction</h4>
-                <p className="text-xs text-cream-400 mt-1">
-                  Assembled and distributed free Narcan kits, managed clothing drives, and stocked
-                  the free art supply room.
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-2 text-right">
-              <button
-                type="button"
-                onClick={() => setActiveModal(null)}
-                className="px-5 py-2 rounded-full bg-charcoal-800 text-cream-200 hover:bg-charcoal-700 text-xs font-medium"
-              >
-                Close Overview
-              </button>
-            </div>
-          </div>
-        </ArchiveDialog>
-      )}
-
-      {/* Modal 3: Founding Philosophy & Narrative */}
-      {activeModal === "story" && (
-        <ArchiveDialog title="Our Founding Narrative" onClose={() => setActiveModal(null)}>
-          <div className="bg-charcoal-900 border border-charcoal-700 rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-charcoal-800 pb-4">
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-peach-300" />
-                <h3 className="text-xl sm:text-2xl font-semibold text-cream-50">
-                  Our Founding Narrative
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setActiveModal(null)}
-                className="text-cream-400 hover:text-cream-100 p-1.5 rounded-lg hover:bg-charcoal-800"
-                aria-label="Close dialog"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4 text-sm text-cream-200 font-normal leading-relaxed">
-              <p className="font-serif italic text-peach-200 text-base">
-                &ldquo;Contrary to the strict capitalist logic of starting a &lsquo;successful
-                business&rsquo;, we felt adamant about making a community space that would be exploratory
-                and unfixed, rather than something predetermined and straightforward... A space that was
-                Liminal.&rdquo;
-              </p>
-              <p>
-                Liminal was born from discussions between Flagstaff locals who witnessed creative
-                stagnation and the creeping commercialization of social life. Rather than starting a
-                standard business that extracted profit from coffee drinkers, they conceived a space
-                modeled after Paulo Freire&apos;s popular education and mutual aid networks.
-              </p>
-              <p>
-                From March 2021 through mid-2023, hundreds of community members came through 217 S San
-                Francisco St to attend Narcan trainings, organize labor initiatives, play jazz, paint,
-                borrow radical books, and share meals—all without a required fee.
-              </p>
-            </div>
-
-            <div className="pt-2 text-right">
-              <button
-                type="button"
-                onClick={() => setActiveModal(null)}
-                className="px-5 py-2 rounded-full bg-charcoal-800 text-cream-200 hover:bg-charcoal-700 text-xs font-medium"
-              >
-                Close Story
-              </button>
-            </div>
-          </div>
-        </ArchiveDialog>
-      )}
     </div>
   );
 }

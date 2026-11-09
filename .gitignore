@@ -35,3 +35,10 @@ yarn-error.log*
 *.MP4
 *.zip
 *.tar.gz
+*.png
+*.jpg
+*.jpeg
+
+# Historical raw references & archives containing private records
+/references/
+

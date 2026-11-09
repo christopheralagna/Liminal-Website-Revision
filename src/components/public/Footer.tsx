@@ -10,7 +10,9 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-cream-50/25">
           {/* Column 1: Logo & Mission Statement */}
           <div className="md:col-span-2 space-y-4">
-            <div className="inline-flex bg-charcoal-950 p-4"><LiminalLogo size="md" /></div>
+            <div className="inline-flex bg-charcoal-950 p-4 rounded-lg shadow-sm">
+              <LiminalLogo size="md" />
+            </div>
             <p className="text-cream-100 text-sm leading-relaxed max-w-md pt-2">
               A nonprofit, volunteer-run community living room and pay-what-you-can cafe in
               Flagstaff, Arizona. Operative from 2021 to 2023, centering marginalized voices,
@@ -21,7 +23,7 @@ export function Footer() {
                 href="https://www.instagram.com/liminal.flagstaff/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3.5 py-3 rounded-full bg-charcoal-800 text-peach-300 hover:bg-terracotta-500 hover:text-cream-50 text-xs font-medium transition-colors"
+                className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-charcoal-800 text-peach-300 hover:bg-terracotta-700 hover:text-cream-50 text-xs font-medium transition-colors min-h-[44px]"
                 aria-label="Visit Liminal on Instagram"
               >
                 <Instagram className="w-4 h-4" />
@@ -66,28 +68,28 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/#about" className="text-cream-100 hover:text-peach-200 transition-colors">
-                  Our Founding Story
+                <Link href="/about" className="text-cream-100 hover:text-peach-200 transition-colors">
+                  Our Story &amp; Philosophy
                 </Link>
               </li>
               <li>
-                <Link href="/#resources" className="text-cream-100 hover:text-peach-200 transition-colors">
-                  Community Resources
+                <Link href="/cafe" className="text-cream-100 hover:text-peach-200 transition-colors">
+                  The Café &amp; Equity Model
                 </Link>
               </li>
               <li>
-                <Link href="/#volunteer" className="text-cream-100 hover:text-peach-200 transition-colors">
-                  Volunteer Model
+                <Link href="/events" className="text-cream-100 hover:text-peach-200 transition-colors">
+                  Community &amp; Events
                 </Link>
               </li>
               <li>
-                <Link href="/#mission" className="text-cream-100 hover:text-peach-200 transition-colors">
-                  Operating Overhead & Mission
+                <Link href="/community" className="text-cream-100 hover:text-peach-200 transition-colors">
+                  Volunteering &amp; Collective Care
                 </Link>
               </li>
               <li>
-                <Link href="/#location" className="text-cream-100 hover:text-peach-200 transition-colors">
-                  Historic Space & Location
+                <Link href="/gallery" className="text-cream-100 hover:text-peach-200 transition-colors">
+                  Photo &amp; Media Archive
                 </Link>
               </li>
             </ul>
@@ -107,4 +109,3 @@ export function Footer() {
     </footer>
   );
 }
-
