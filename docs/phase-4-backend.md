@@ -2,7 +2,9 @@
 
 **Updated:** November 9, 2026
 
-**Status:** Stages B1–B5 and C implemented. Stop before Stage D administrative interface.
+**Status:** Stages B1–B5, C, and D implemented. Stop before Phase 5 scheduling.
+
+Stage D adds separate public/admin layouts, login/logout, protected dashboard and read-only volunteer/shift views. See the [administrative interface guide and verification checkpoint](phase-4-admin.md). Stage B/C completion sections below are historical checkpoint records.
 
 Stage C adds the maintained Better Auth runtime, database sessions, centralized permissions, and guarded initial administrator provisioning. See [authentication architecture and operating guide](phase-4-authentication.md). The Stage B record below describes the original foundation checkpoint; its statements that authentication is absent are historical.
 

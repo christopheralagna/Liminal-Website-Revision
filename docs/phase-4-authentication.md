@@ -1,6 +1,6 @@
 # Phase 4 Stage C — authentication and authorization
 
-Implemented November 8–9, 2026. Stage D and Phase 5 remain unimplemented.
+Implemented November 8–9, 2026. Stage D is now implemented; see the [administrative interface guide](phase-4-admin.md). Phase 5 remains unimplemented. This document records the Stage C authentication foundation.
 
 ## Architecture
 
@@ -15,7 +15,7 @@ Better Auth **1.7.18** is now an exact runtime dependency. Its Prisma adapter us
 | `POST /api/auth/sign-out` | Deletes the session and clears its cookie. |
 | `POST /api/auth/sign-up/email` | Always rejected by Better Auth's `disableSignUp`, including direct server API calls. |
 
-All other HTTP auth operations return 404. No signup, login, or administrative UI exists. Public pages never import authentication or database services and remain usable without PostgreSQL or authentication environment variables.
+All other HTTP auth operations return 404. Stage D now provides login and read-only administrative UI; no signup UI exists. Public pages never import authentication or database services and remain usable without PostgreSQL or authentication environment variables.
 
 Better Auth owns credential creation, its default password hashing, cookie signing, and session lifecycle. Passwords are 12–128 characters. Sessions are stored in PostgreSQL and expire **eight hours after creation** without rolling refresh. Cookie session caching is disabled: deleted/expired sessions and changed user records take effect on subsequent requests. Logout invalidates replay of the old cookie. Cookies are HTTP-only and SameSite=Lax, with Secure enabled on HTTPS; production configuration rejects HTTP. CSRF and origin checks are explicitly enabled, including in tests; callback destinations must be trusted. Unrecognized accounts, wrong passwords, and disabled-account logins receive generic credential errors. Library logging is disabled to avoid raw request/adapter error output.
 

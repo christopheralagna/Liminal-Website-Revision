@@ -3,13 +3,29 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { betterAuth } from "better-auth";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createDatabaseClient } from "../../src/server/database/client";
 import { readDatabaseUrl } from "../../src/server/database/environment";
 import { verifyTarget } from "../../scripts/database-target";
 import { createAuth, createAuthHandler } from "../../src/server/auth/factory";
 import { createAuthorization } from "../../src/server/auth/authorization";
 import { provisionInitialAdmin } from "../../src/server/auth/provision";
+
+import { renderToStaticMarkup } from "react-dom/server";
+import DashboardPage from "../../src/app/admin/(protected)/page";
+import VolunteersPage from "../../src/app/admin/(protected)/volunteers/page";
+import SchedulingPage from "../../src/app/admin/(protected)/scheduling/page";
+import LoginPage from "../../src/app/admin/login/page";
+import ProtectedLayout from "../../src/app/admin/(protected)/layout";
+import { getDashboard, getVolunteers, getShifts } from "../../src/server/admin/queries";
+import { readAdminPage } from "../../src/server/admin/page-access";
+
+let pageHeaders = new Headers();
+// Only the Next request context/singleton wiring is replaced; real auth, RBAC and queries run.
+vi.mock("next/headers", () => ({ headers: async () => pageHeaders }));
+vi.mock("../../src/server/db", () => ({ getDatabase: () => db }));
+vi.mock("../../src/server/auth/index", () => ({ getAuth: () => auth }));
+vi.mock("next/navigation", () => ({ redirect: (path: string) => { throw new Error(`REDIRECT:${path}`); } }));
 
 const env = { BETTER_AUTH_URL: "http://localhost:3000", BETTER_AUTH_SECRET: randomBytes(48).toString("base64url"), NODE_ENV: "test" };
 const password = randomBytes(24).toString("base64url");
@@ -206,4 +222,77 @@ describe("real Better Auth / PostgreSQL authentication and authorization", () =>
     const session = await db.session.findFirstOrThrow({ where: { userId: users.VIEWER.id }, orderBy: { createdAt: "desc" } });
     expect(Math.abs(session.expiresAt.getTime() - session.createdAt.getTime() - 8 * 60 * 60 * 1000)).toBeLessThan(2000);
   });
+  it("protects every Stage D query directly, supports all read roles, and reflects PostgreSQL changes", async () => {
+    pageHeaders = new Headers();
+    for (const query of [getDashboard, getVolunteers, getShifts]) {
+      await expect(query()).rejects.toMatchObject({ status: 401 });
+      await expect(readAdminPage<unknown>(query)).rejects.toThrow("REDIRECT:/admin/login");
+    }
+    for (const role of ["ADMIN", "COORDINATOR", "VIEWER"]) {
+      pageHeaders = authenticated((await login(role)).cookie);
+      const summary = await getDashboard();
+      expect(summary.activeVolunteers).toBe(await db.volunteerProfile.count({ where: { status: "ACTIVE" } }));
+      expect(summary.scheduledShifts).toBe(await db.shift.count({ where: { status: "SCHEDULED" } }));
+      expect((await getVolunteers()).length).toBe(await db.volunteerProfile.count());
+      expect((await getShifts()).length).toBe(await db.shift.count());
+    }
+    const before = await getDashboard();
+    const record = await db.volunteerProfile.create({ data: { displayName: `Stage D ${prefix}` } });
+    try {
+      expect((await getDashboard()).activeVolunteers).toBe(before.activeVolunteers + 1);
+      const shown = (await getVolunteers()).find(row => row.id === record.id)!;
+      expect(shown.displayName).toBe(`Stage D ${prefix}`);
+      expect(shown).not.toHaveProperty("email");
+      expect(shown).not.toHaveProperty("userId");
+    } finally { await db.volunteerProfile.delete({ where: { id: record.id } }); }
+    const cookie = (await login()).cookie;
+    pageHeaders = authenticated(cookie);
+    await request("sign-out", {}, cookie);
+    await expect(getDashboard()).rejects.toMatchObject({ status: 401 });
+    const disabled = (await login()).cookie;
+    pageHeaders = authenticated(disabled);
+    await db.user.update({ where: { id: users.VIEWER.id }, data: { isActive: false } });
+    try { await expect(getVolunteers()).rejects.toBeInstanceOf(Error); }
+    finally { await db.user.update({ where: { id: users.VIEWER.id }, data: { isActive: true } }); }
+  });
+
+  it("handles empty query results and sanitizes database and permission failures for pages", async () => {
+    // An empty read result is distinct from an outage; no database records are removed.
+    expect(await readAdminPage(async () => [])).toEqual({ data: [], error: null });
+    pageHeaders = authenticated((await login()).cookie);
+    const failure = vi.spyOn(db.volunteerProfile, "findMany").mockRejectedValueOnce(new Error("private database details"));
+    try {
+      const result = await readAdminPage(getVolunteers);
+      expect(result.data).toBeNull();
+      expect(result.error).toContain("temporarily unavailable");
+      expect(JSON.stringify(result)).not.toContain("private database details");
+    } finally { failure.mockRestore(); }
+    const { AuthorizationError } = await import("../../src/server/auth/authorization");
+    expect((await readAdminPage(async () => { throw new AuthorizationError(403); })).error).toContain("permission");
+  });
+
+  it("renders protected pages through real sessions and redirects login visitors correctly", async () => {
+    pageHeaders = new Headers();
+    expect(renderToStaticMarkup(await LoginPage())).toContain('autoComplete="current-password"');
+    await expect(ProtectedLayout({ children: null })).rejects.toThrow("REDIRECT:/admin/login");
+    pageHeaders = authenticated((await login()).cookie);
+    await expect(LoginPage()).rejects.toThrow("REDIRECT:/admin");
+    expect(renderToStaticMarkup(await DashboardPage())).toContain(String((await getDashboard()).activeVolunteers));
+    expect(renderToStaticMarkup(await VolunteersPage())).toContain("Recorded volunteers");
+    expect(renderToStaticMarkup(await SchedulingPage())).toContain("America/Phoenix");
+    const empty = vi.spyOn(db.volunteerProfile, "findMany").mockResolvedValueOnce([]);
+    try { expect(renderToStaticMarkup(await VolunteersPage())).toContain("No volunteers are recorded."); }
+    finally { empty.mockRestore(); }
+    const noShifts = vi.spyOn(db.shift, "findMany").mockResolvedValueOnce([]);
+    try { expect(renderToStaticMarkup(await SchedulingPage())).toContain("No shifts are recorded."); }
+    finally { noShifts.mockRestore(); }
+    const failure = vi.spyOn(db.user, "findUnique").mockRejectedValueOnce(new Error("private connection details"));
+    try {
+      const html = renderToStaticMarkup(await ProtectedLayout({ children: "protected child" }));
+      expect(html).toContain("temporarily unavailable");
+      expect(html).not.toContain("protected child");
+      expect(html).not.toContain("private connection details");
+    } finally { failure.mockRestore(); }
+  });
+
 });
