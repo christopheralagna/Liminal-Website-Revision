@@ -1,6 +1,6 @@
 # Liminal Community Center & Cafe — Digital Historical Archive & Management Platform
 
-> **Current status — November 8, 2026:** Phase 4 **Stage B database foundation is complete**; stop before Stage C authentication. The public website is unchanged. See [backend setup and validation](docs/phase-4-backend.md), [B1 compatibility report](docs/phase-4-b1.md), and [project status](docs/project-status.md). Older public feature descriptions below predate the content refinement; see the [refinement report](docs/phase-3-content-refinement.md) for current public content.
+> **Current status — November 9, 2026:** Phase 4 **Stages B and C are complete**; stop before Stage D administrative interface. The public website is unchanged. See [backend setup and validation](docs/phase-4-backend.md), [B1 compatibility report](docs/phase-4-b1.md), and [project status](docs/project-status.md). Older public feature descriptions below predate the content refinement; see the [refinement report](docs/phase-3-content-refinement.md) for current public content.
 
 ## Backend quickstart (synthetic demonstration data only)
 
@@ -22,7 +22,7 @@ npm run dev
 
 Development database: `127.0.0.1:5434/liminal_dev`; tests: `127.0.0.1:5435/liminal_test`. Each has its own credentials and named volume. `npm run db:stop` stops both without deleting data. Never commit `.env`. The [backend guide](docs/phase-4-backend.md) explains connection commands, schema/custom constraints, test isolation, and future migrations.
 
-Node **24.22.2**, Next.js **16.4.5**, React **19.3.1**, and Prisma **7.10.1** are pinned. The public site requires no database or auth service. `npm run db:generate` regenerates the ignored Prisma client if needed; run it after schema edits. No login, administrator provisioning, admin interface, or scheduling business logic exists yet. Better Auth is installed only as development schema tooling; Stage C will implement authentication.
+Node **24.22.2**, Next.js **16.4.5**, React **19.3.1**, and Prisma **7.10.1** are pinned. The public site requires no database or auth service. `npm run db:generate` regenerates the ignored Prisma client if needed; run it after schema edits. Better Auth 1.7.18 provides backend login, database sessions, permissions, and secure local administrator provisioning. No administrative UI or scheduling business logic exists yet. See [authentication setup and provisioning](docs/phase-4-authentication.md).
 
 A portfolio-quality full-stack web application preserving the history, mission, and community impact of **Liminal Community Center & Cafe**, an authentic nonprofit community living room and pay-what-you-can cafe that operated in Flagstaff, Arizona, from 2021 to 2023.
 

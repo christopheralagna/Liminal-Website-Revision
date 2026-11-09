@@ -1,8 +1,10 @@
 # Phase 4 backend foundation
 
-**Updated:** November 8, 2026
+**Updated:** November 9, 2026
 
-**Status:** Stage B (B1–B5) implemented. Stop before Stage C authentication.
+**Status:** Stages B1–B5 and C implemented. Stop before Stage D administrative interface.
+
+Stage C adds the maintained Better Auth runtime, database sessions, centralized permissions, and guarded initial administrator provisioning. See [authentication architecture and operating guide](phase-4-authentication.md). The Stage B record below describes the original foundation checkpoint; its statements that authentication is absent are historical.
 
 ## Architecture and scope
 
@@ -140,4 +142,27 @@ Stage C can use the generated client and reconciled authentication tables, but m
 
 Before Phase 5: settle availability warnings/overrides, one-off exceptions, recurring-pattern edits and preservation of assigned future occurrences, certificate applicability/expiry-day semantics, and cancellation/reactivation history. Capacity/overlap checks must be revalidated inside consistently locked transactions; the unique volunteer/shift key alone is insufficient. Do not add deferred domains until their workflows are approved.
 
-Stop before Stage C; no administrative interface or scheduling workflow has been started.
+Stage C is now implemented; no administrative interface or scheduling workflow has been started. Stop before Stage D.
+
+## Stage C completion checkpoint — November 9, 2026
+
+Stage C authentication and authorization is implemented. See [the authentication guide](phase-4-authentication.md) for architecture, permission boundaries, local setup, provisioning, tests, and deployment limitations. The schema, committed migration, synthetic seed, and all existing public source/assets are unchanged from the Stage B commit. Better Auth 1.7.18 moved from development-only tooling to a pinned runtime dependency; no library versions were upgraded.
+
+Major additions: `src/server/auth/` (lazy library configuration, shared field contract, current-account authorization, request-scoped permission helpers, local provisioning), the Node `/api/auth/[...all]` Route Handler, `scripts/provision-admin.ts`, and real authentication integration/environment tests. Package scripts, the environment example, schema-generation configuration, Vitest server-only handling, README, and project status are updated.
+
+Completion verification with Node 24.22.2:
+
+- `npm test`: **11 passed** (existing nine plus two auth environment tests).
+- `npm run test:db`: **34 passed** (existing 19 plus 15 real Better Auth/PostgreSQL cases). Includes concurrent initial provisioning, duplicate rejection, the complete permission matrix, stale session/role/disabled-account checks, and CSRF/rate-limit behavior. Only the guarded dedicated test database was used for account writes; synthetic auth records were cleaned up.
+- `npm run typecheck`: passed.
+- Final `npm run lint`: passed with zero warnings.
+- One final `DATABASE_URL= TEST_DATABASE_URL= BETTER_AUTH_URL= BETTER_AUTH_SECRET= npm run build`: passed; six public routes remain static, and the auth route is dynamic.
+- Production server smoke check with the same four variables blank: `/`, `/about`, `/cafe`, `/community`, `/events`, and `/gallery` all returned **200**. No public visual regression run was necessary.
+- Provisioning CLI smoke checks: noninteractive execution refused; actual PTY input verified both password entries are hidden and a too-short synthetic password fails without provisioning. No real administrator or developer credentials were created.
+- `git diff --check`: passed. Read-only comparison to the Stage B commit confirmed no schema/migration/seed or existing public source/assets changed.
+
+Initial sandboxed database execution was blocked by loopback permissions; the suite was rerun with permitted local access. The first connected auth run found Better Auth's test-mode default skipping origin checks (33 passed, one failed). Explicit origin/CSRF settings corrected this; the full suite passed afterward, including strengthened provisioning concurrency and CSRF cases. Blocked/failed attempts are not counted as passing verification.
+
+Confirmed protections include library-owned hashing/session lifecycle, endpoint-level signup rejection, HTTP-only SameSite cookies, Secure cookies on HTTPS, explicit origin/CSRF validation, fixed database-backed expiry, logout revocation, current-account permission checks, generic credential failures, server-owned role/active fields, and transactional local provisioning. Remaining deployment considerations are the per-process in-memory limiter and trusted ingress/IP-header configuration, actual TLS/secret/database operations, monitoring, expired-session cleanup, and future password recovery. No unresolved local implementation failure remains; no production deployment is claimed.
+
+Stage D can connect login/session/logout endpoints and `requireUser`, `requirePermission`, and `requireRole` to future server operations and UI. No administrative pages, account-management system, event/finance functionality, or scheduling rules were built. Stop here before Stage D.

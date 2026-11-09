@@ -1,7 +1,7 @@
 # Liminal Project Status & Context Summary
 
-**Updated:** November 8, 2026  
-**Current work:** Phase 4 Stage B (B1–B5) database foundation complete; stopped before Stage C.
+**Updated:** November 9, 2026
+**Current work:** Phase 4 Stages B1–B5 and C complete; stopped before Stage D.
 
 **Stack:** Node 24.22.2, Next.js 16.4.5 App Router, React 19.3.1, TypeScript 5.9.3, Tailwind CSS 3.4.19.
 
@@ -37,10 +37,12 @@ The active `prisma/schema.prisma` now implements the approved **12-model Postgre
 
 The seed creates 12 synthetic volunteers, three roles, 16 memberships, 24 availability windows, two recurring patterns, two shifts, and four assignments. It is transactional, repeatable, and preserves user edits/unrelated records. Zero users, credentials, or sessions are seeded. No private historical records were imported.
 
-Better Auth 1.7.18's generated core schema is reconciled and retained as a development artifact. There is **no authentication implementation**, account provisioning, admin route, or scheduling engine. Deferred event/finance/audit/qualification/coverage models remain absent. Role memberships and optional food-handler dates follow the approved simplified design.
+Better Auth 1.7.18's generated core schema is reconciled and retained as a development artifact. Stage C adds its runtime authentication route, database sessions, current-user RBAC, and guarded local administrator provisioning. There is no administrative UI or scheduling engine. See the [authentication guide](phase-4-authentication.md). Deferred event/finance/audit/qualification/coverage models remain absent. Role memberships and optional food-handler dates follow the approved simplified design.
 
-Validation: Prisma validation/generation, migrations/status, repeated seed, no-drift comparison, **nine unit/contract tests and 19 PostgreSQL tests**, TypeScript, and final lint/build passed. The public build and all six routes were verified with the project databases stopped. Existing public source/assets are unchanged; no visual testing was repeated. Details and known limits: [backend guide](phase-4-backend.md). Existing B1 development-tooling warnings remain documented and were not reinvestigated.
+Stage B validation: Prisma validation/generation, migrations/status, repeated seed, no-drift comparison, **nine unit/contract tests and 19 PostgreSQL tests**, TypeScript, and final lint/build passed. The public build and all six routes were verified with the project databases stopped. Existing public source/assets are unchanged; no visual testing was repeated. Details and known limits: [backend guide](phase-4-backend.md). Existing B1 development-tooling warnings remain documented and were not reinvestigated.
 
 The server-only Prisma singleton is lazy; public pages need no database. `.env*` is ignored except `.env.example`; generated Prisma output is ignored and recreated on installation. Local mutation commands verify approved database targets and live database/user identity. No deployment was performed.
 
-Prior uncommitted changes, including Stage A/B1 work, were preserved. Stage C is the next approval boundary: maintained authentication, sessions, server-side authorization, and secure administrator provisioning. Phase 5 scheduling workflows remain future work.
+Stage C preserves the committed Stage B schema/migration, seed, and public site. Stage D is the next boundary: connect the authentication and permission services to an administrative interface. Phase 5 scheduling workflows remain future work.
+
+Stage C completion validation: **11 unit/contract and 34 PostgreSQL tests passed**, TypeScript and final lint/build passed. All six production public routes returned 200 with database/auth variables blank. Interactive CLI checks verified hidden passwords and safe rejection; no real administrator was created. Production ingress/TLS/secrets, distributed abuse protection, monitoring/cleanup, and a future recovery workflow remain deployment considerations. Detailed results and the corrected test-mode origin-check issue are recorded in the [backend checkpoint](phase-4-backend.md#stage-c-completion-checkpoint--november-9-2026).

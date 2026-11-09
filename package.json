@@ -18,7 +18,8 @@
     "test": "vitest run",
     "test:db": "vitest run --config vitest.database.config.mts",
     "auth:schema": "auth generate --config scripts/auth-schema.config.mts --adapter prisma --dialect postgresql --output docs/generated/better-auth-1.7.18.prisma --yes",
-    "postinstall": "prisma generate --config prisma.config.ts"
+    "postinstall": "prisma generate --config prisma.config.ts",
+    "auth:provision-admin": "node --conditions=react-server --import tsx scripts/provision-admin.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",
@@ -31,7 +32,8 @@
     "react-dom": "19.3.1",
     "server-only": "0.0.1",
     "tailwind-merge": "2.6.1",
-    "zod": "4.6.7"
+    "zod": "4.6.7",
+    "better-auth": "1.7.18"
   },
   "devDependencies": {
     "@types/node": "24.19.2",
@@ -40,7 +42,6 @@
     "@types/react-dom": "19.3.0",
     "auth": "1.7.18",
     "autoprefixer": "10.6.2",
-    "better-auth": "1.7.18",
     "dotenv": "18.0.10",
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.5",

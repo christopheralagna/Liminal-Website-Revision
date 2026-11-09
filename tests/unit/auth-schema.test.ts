@@ -7,7 +7,7 @@ function fields(schema: string, name: string) {
   return Object.fromEntries(body.split("\n").map(line => line.trim().match(/^(\w+)\s+(\w+(?:\[\]|\?)?)/)).filter(match => match !== null).map(match => [match![1], match![2]]));
 }
 
-describe("pinned Better Auth schema contract (no authentication runtime)", () => {
+describe("pinned Better Auth schema contract", () => {
   it("preserves the generated core fields, nullability and native UUID defaults", () => {
     const generated = readFileSync("docs/generated/better-auth-1.7.18.prisma", "utf8");
     const actual = readFileSync("prisma/schema.prisma", "utf8");
