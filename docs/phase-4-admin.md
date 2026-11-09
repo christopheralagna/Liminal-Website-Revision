@@ -1,6 +1,6 @@
 # Phase 4 Stage D — administrative interface
 
-Implemented November 9, 2026. Phase 5 remains unimplemented.
+Implemented November 9, 2026. This is the Stage D checkpoint; [Phase 5A](phase-5a-volunteers.md) now extends the volunteer section with independently authorized mutations. Scheduling remains read-only.
 
 ## Routes and layout separation
 

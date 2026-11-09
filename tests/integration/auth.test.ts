@@ -278,10 +278,10 @@ describe("real Better Auth / PostgreSQL authentication and authorization", () =>
     pageHeaders = authenticated((await login()).cookie);
     await expect(LoginPage()).rejects.toThrow("REDIRECT:/admin");
     expect(renderToStaticMarkup(await DashboardPage())).toContain(String((await getDashboard()).activeVolunteers));
-    expect(renderToStaticMarkup(await VolunteersPage())).toContain("Recorded volunteers");
+    expect(renderToStaticMarkup(await VolunteersPage({}))).toContain("Recorded volunteers");
     expect(renderToStaticMarkup(await SchedulingPage())).toContain("America/Phoenix");
     const empty = vi.spyOn(db.volunteerProfile, "findMany").mockResolvedValueOnce([]);
-    try { expect(renderToStaticMarkup(await VolunteersPage())).toContain("No volunteers are recorded."); }
+    try { expect(renderToStaticMarkup(await VolunteersPage({}))).toContain("No volunteers are recorded."); }
     finally { empty.mockRestore(); }
     const noShifts = vi.spyOn(db.shift, "findMany").mockResolvedValueOnce([]);
     try { expect(renderToStaticMarkup(await SchedulingPage())).toContain("No shifts are recorded."); }

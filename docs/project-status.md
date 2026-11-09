@@ -1,7 +1,7 @@
 # Liminal Project Status & Context Summary
 
 **Updated:** November 9, 2026
-**Current work:** Phase 4 Stages B1–B5, C, and D complete; stopped before Phase 5.
+**Current work:** Phase 5A volunteer management implemented; Phase 5B scheduling remains deferred. See [Phase 5A implementation and verification](phase-5a-volunteers.md).
 
 **Stack:** Node 24.22.2, Next.js 16.4.5 App Router, React 19.3.1, TypeScript 5.9.3, Tailwind CSS 3.4.19.
 
@@ -48,3 +48,7 @@ Stage C preserves the committed Stage B schema/migration, seed, and public site.
 Stage C completion validation: **11 unit/contract and 34 PostgreSQL tests passed**, TypeScript and final lint/build passed. All six production public routes returned 200 with database/auth variables blank. Interactive CLI checks verified hidden passwords and safe rejection; no real administrator was created. Production ingress/TLS/secrets, distributed abuse protection, monitoring/cleanup, and a future recovery workflow remain deployment considerations. Detailed results and the corrected test-mode origin-check issue are recorded in the [backend checkpoint](phase-4-backend.md#stage-c-completion-checkpoint--november-9-2026).
 
 Stage D verification: **11 unit and 37 PostgreSQL integration tests passed**, TypeScript, lint, and production build passed. All six public pages remain static and returned 200 with database/auth configuration blank. Protected HTTP redirects, server-rendered pages, empty/error states, and direct service authorization were verified. Browser interaction verification remains incomplete due to connector failures; no real administrator was created, and `.env` was preserved. See [Stage D architecture, local usage, and full checkpoint](phase-4-admin.md).
+
+Phase 5A extends `/admin/volunteers` with creation, details, editing, status changes, operational-role checkboxes, effective-dated weekly availability, and optional food-handler dates. ADMIN/COORDINATOR writes use independently authorized transactional services; VIEWER remains read-only. Historical assignments are preserved. No migration, seed, dependency, public-site, or auth configuration changes were required. See the [Phase 5A guide](phase-5a-volunteers.md) for data flow, overlap and concurrency policies, validation results, and browser limits.
+
+Phase 5A validation: 11 unit tests passed; the full integration pass had 46 passing tests, followed by 10 passing volunteer tests after final concurrency hardening (including one added case). Final TypeScript, lint, production build, and diff checks passed. Browser UI interactions remain unverified after connector failure and an unusably slow native fallback.
