@@ -42,7 +42,7 @@ export async function seedDemonstrationData(database: PrismaClient) {
       } });
       const day = i === 0 ? "2027-01-04" : "2027-01-06";
       await tx.shift.upsert({ where: { id: shiftId }, update: {}, create: {
-        id: shiftId, definitionId, patternId, startsAt: new Date(`${day}T16:00:00Z`), endsAt: new Date(`${day}T19:00:00Z`), capacity: 3,
+        id: shiftId, definitionId, patternId, occurrenceDate: date(day), startsAt: new Date(`${day}T16:00:00Z`), endsAt: new Date(`${day}T19:00:00Z`), capacity: 3,
       } });
       for (let j = 0; j < 2; j++) {
         const volunteerId = demoId(i === 0 ? 100 + j : 104 + j);

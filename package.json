@@ -19,7 +19,8 @@
     "test:db": "vitest run --config vitest.database.config.mts",
     "auth:schema": "auth generate --config scripts/auth-schema.config.mts --adapter prisma --dialect postgresql --output docs/generated/better-auth-1.7.18.prisma --yes",
     "postinstall": "prisma generate --config prisma.config.ts",
-    "auth:provision-admin": "node --conditions=react-server --import tsx scripts/provision-admin.ts"
+    "auth:provision-admin": "node --conditions=react-server --import tsx scripts/provision-admin.ts",
+    "auth:provision-test-user": "node --conditions=react-server --import tsx scripts/provision-test-user.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",

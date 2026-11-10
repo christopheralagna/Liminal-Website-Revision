@@ -40,7 +40,7 @@ describe("isolated PostgreSQL foundation", () => {
     const identity = await pool.query('SELECT current_database() AS name');
     expect(identity.rows[0].name).toBe("liminal_test");
     const migrations = await pool.query('SELECT migration_name, finished_at FROM "_prisma_migrations" WHERE rolled_back_at IS NULL');
-    expect(migrations.rows).toEqual([expect.objectContaining({ migration_name: "20261108000000_initial", finished_at: expect.any(Date) })]);
+    expect(migrations.rows).toEqual(expect.arrayContaining([expect.objectContaining({ migration_name: "20261108000000_initial", finished_at: expect.any(Date) }), expect.objectContaining({ migration_name: "20261110000000_shift_occurrence_date", finished_at: expect.any(Date) })]));
     const tables = await pool.query("SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename <> '_prisma_migrations'");
     expect(tables.rows.map(r => r.tablename).sort()).toEqual(["Account", "Availability", "Session", "Shift", "ShiftAssignment", "ShiftDefinition", "ShiftPattern", "User", "Verification", "VolunteerProfile", "VolunteerRole", "VolunteerRoleMembership"].sort());
   });
@@ -146,7 +146,7 @@ describe("isolated PostgreSQL foundation", () => {
   it("keeps assignments and recurrence occurrences unique; permits multiple volunteers", async () => {
     expect(await database.shiftAssignment.count({ where: { shiftId: demoId(400) } })).toBe(2);
     await expect(database.shiftAssignment.create({ data: { shiftId: demoId(400), volunteerId: demoId(100) } })).rejects.toMatchObject({ code: "P2002" });
-    await expect(database.shift.create({ data: { definitionId: demoId(200), patternId: demoId(300), startsAt: new Date("2027-01-04T16:00:00Z"), endsAt: new Date("2027-01-04T19:00:00Z"), capacity: 2 } })).rejects.toMatchObject({ code: "P2002" });
+    await expect(database.shift.create({ data: { definitionId: demoId(200), patternId: demoId(300), occurrenceDate: new Date("2027-01-04T00:00:00Z"), startsAt: new Date("2027-01-04T16:00:00Z"), endsAt: new Date("2027-01-04T19:00:00Z"), capacity: 2 } })).rejects.toMatchObject({ code: "P2002" });
     await expect(database.shift.delete({ where: { id: demoId(400) } })).rejects.toMatchObject({ code: "P2003" });
   });
 

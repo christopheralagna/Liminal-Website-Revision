@@ -199,6 +199,8 @@ model Shift {
   id           String            @id @default(uuid()) @db.Uuid
   definitionId String            @db.Uuid
   patternId    String?           @db.Uuid
+  // Immutable original local date for recurring shifts; null for one-time shifts.
+  occurrenceDate DateTime?        @db.Date
   startsAt     DateTime          @db.Timestamptz(3)
   endsAt       DateTime          @db.Timestamptz(3)
   capacity     Int
@@ -210,6 +212,7 @@ model Shift {
   assignments  ShiftAssignment[]
 
   @@unique([patternId, startsAt])
+  @@unique([patternId, occurrenceDate])
   @@index([startsAt, endsAt])
   @@index([definitionId])
 }

@@ -1,7 +1,7 @@
 # Liminal Project Status & Context Summary
 
-**Updated:** November 9, 2026
-**Current work:** Phase 5A volunteer management implemented; Phase 5B scheduling remains deferred. See [Phase 5A implementation and verification](phase-5a-volunteers.md).
+**Updated:** November 10, 2026
+**Current work:** Phase 5B shift creation and recurring scheduling completed and approved November 10, 2026. Phase 5C has not begun. See [Phase 5B behavior and verification](phase-5b-scheduling.md). Assignment management remains deferred. Phase 5B refinements add a role-organized shift-type catalog, role-first creation, multi-select calendar/list filtering, atomic shortening/cancellation, server-managed save redirects, and guarded local test-user provisioning. Core ADMIN browser interactions passed through native Chrome; remaining manual checks are listed in the guide. The intermittent RSC `enqueueModel` / closed-stream runtime error is a known unresolved issue; its exact trigger remains uncertain.
 
 **Stack:** Node 24.22.2, Next.js 16.4.5 App Router, React 19.3.1, TypeScript 5.9.3, Tailwind CSS 3.4.19.
 
